@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
 import { ArrowRight, Home, TrendingUp, Percent } from "lucide-react";
 
@@ -17,8 +18,8 @@ interface HeroSectionProps {
 }
 
 const HeroSection = ({
-  headline = "Invest in Dubai Real Estate with Small Amounts",
-  subheadline = "Access premium Dubai real estate investments starting from just AED 1,800. Earn passive income and grow your wealth with Housers.",
+  headline = "Premium Dubai Real Estate Investments",
+  subheadline = "Access exclusive property investments in Dubai starting from just AED 1,800. Earn passive income and grow your wealth with Al Futura.",
   ctaText = "Start Investing Now",
   backgroundImage = "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=1920&q=80",
   featuredProperty = {
@@ -30,9 +31,7 @@ const HeroSection = ({
   },
 }: HeroSectionProps) => {
   return (
-    <div className="relative w-full h-[600px] bg-white overflow-hidden pt-20">
-      {" "}
-      {/* Added pt-20 for padding top */}
+    <div className="relative w-full h-[700px] bg-white overflow-hidden pt-24 md:pt-28">
       {/* Background Image with Overlay */}
       <div
         className="absolute inset-0 bg-cover bg-center"
@@ -46,16 +45,18 @@ const HeroSection = ({
           <h1 className="text-4xl md:text-5xl font-bold mb-4">{headline}</h1>
           <p className="text-lg md:text-xl mb-8">{subheadline}</p>
 
-          <Button
-            size="lg"
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold"
-          >
-            {ctaText} <ArrowRight className="ml-2 h-5 w-5" />
-          </Button>
+          <Link to="/properties">
+            <Button
+              size="lg"
+              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold"
+            >
+              {ctaText} <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+          </Link>
         </div>
 
         {/* Featured Investment Card */}
-        <div className="mt-12 bg-white rounded-lg shadow-xl p-6 max-w-md">
+        <div className="mt-8 bg-white rounded-lg shadow-xl p-6 max-w-md z-10">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-bold text-gray-800">
               Featured Opportunity
@@ -103,12 +104,14 @@ const HeroSection = ({
             </span>
           </div>
 
-          <Button
-            variant="outline"
-            className="w-full mt-4 border-blue-600 text-blue-600 hover:bg-blue-50"
-          >
-            View Details
-          </Button>
+          <Link to="/property/1">
+            <Button
+              variant="outline"
+              className="w-full mt-4 border-blue-600 text-blue-600 hover:bg-blue-50"
+            >
+              View Details
+            </Button>
+          </Link>
         </div>
       </div>
     </div>

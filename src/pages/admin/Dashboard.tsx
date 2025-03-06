@@ -13,6 +13,12 @@ import DeleteConfirmDialog from "../../components/admin/DeleteConfirmDialog";
 import { PropertyFormData } from "../../components/admin/PropertyForm";
 import { v4 as uuidv4 } from "uuid";
 import { useAuth } from "../../contexts/AuthContext";
+import {
+  fetchProperties,
+  createProperty,
+  updateProperty,
+  deleteProperty,
+} from "../../lib/properties";
 
 // Define view types as string constants instead of enum
 const AdminView = {
@@ -113,7 +119,7 @@ const sampleProperties = [
 const Dashboard = () => {
   const navigate = useNavigate();
   const { user, isAdmin, isLoading } = useAuth();
-  const [properties, setProperties] = useState(sampleProperties);
+  const [properties, setProperties] = useState<PropertyFormData[]>([]);
   const [currentView, setCurrentView] = useState(AdminView.LIST);
   const [selectedProperty, setSelectedProperty] = useState(null);
   const [isFormLoading, setIsFormLoading] = useState(false);
@@ -128,9 +134,45 @@ const Dashboard = () => {
         navigate("/login");
       } else if (!isAdmin) {
         navigate("/");
+      } else {
+        // Load properties from Supabase
+        loadProperties();
       }
     }
   }, [user, isAdmin, isLoading, navigate]);
+
+  // Load properties from Supabase
+  const loadProperties = async () => {
+    try {
+      const propertiesData = await fetchProperties();
+      // Convert from snake_case to camelCase
+      const formattedProperties = propertiesData.map((p) => ({
+        id: p.id,
+        title: p.title,
+        description: p.description,
+        location: p.location,
+        imageUrl: p.image_url,
+        additionalImages: p.additional_images || [],
+        minInvestment: p.min_investment,
+        expectedROI: p.expected_roi,
+        fundingProgress: p.funding_progress,
+        fundingGoal: p.funding_goal,
+        propertyType: p.property_type,
+        features: p.features || [],
+        investmentDetails: p.investment_details || {
+          term: "5 years",
+          payoutFrequency: "Quarterly",
+          exitStrategy: "Property sale or refinancing",
+          investorCount: 0,
+        },
+      }));
+      setProperties(formattedProperties);
+    } catch (error) {
+      console.error("Error loading properties:", error);
+      // If no properties are found, use sample data
+      setProperties(sampleProperties);
+    }
+  };
 
   const handleAddProperty = () => {
     setSelectedProperty(null);
@@ -152,11 +194,18 @@ const Dashboard = () => {
     setDeleteDialogOpen(true);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (propertyToDelete) {
-      setProperties(properties.filter((p) => p.id !== propertyToDelete));
-      setDeleteDialogOpen(false);
-      setPropertyToDelete(null);
+      try {
+        await deleteProperty(propertyToDelete);
+        setProperties(properties.filter((p) => p.id !== propertyToDelete));
+        setDeleteDialogOpen(false);
+        setPropertyToDelete(null);
+        alert("Property deleted successfully!");
+      } catch (error) {
+        console.error("Error deleting property:", error);
+        alert(`Error deleting property: ${error.message || "Unknown error"}`);
+      }
     }
   };
 
@@ -165,30 +214,78 @@ const Dashboard = () => {
     setPropertyToDelete(null);
   };
 
-  const handleFormSubmit = (formData) => {
+  const handleFormSubmit = async (formData: PropertyFormData) => {
     setIsFormLoading(true);
 
-    // Simulate API call delay
-    setTimeout(() => {
+    try {
       if (currentView === AdminView.ADD) {
-        // Add new property
-        const newProperty = {
-          ...formData,
-          id: uuidv4(), // Generate a unique ID
+        // Add new property to Supabase
+        const newProperty = await createProperty(formData);
+        // Convert from snake_case to camelCase
+        const formattedProperty = {
+          id: newProperty.id,
+          title: newProperty.title,
+          description: newProperty.description,
+          location: newProperty.location,
+          imageUrl: newProperty.image_url,
+          additionalImages: newProperty.additional_images || [],
+          minInvestment: newProperty.min_investment,
+          expectedROI: newProperty.expected_roi,
+          fundingProgress: newProperty.funding_progress,
+          fundingGoal: newProperty.funding_goal,
+          propertyType: newProperty.property_type,
+          features: newProperty.features || [],
+          investmentDetails: newProperty.investment_details || {
+            term: "5 years",
+            payoutFrequency: "Quarterly",
+            exitStrategy: "Property sale or refinancing",
+            investorCount: 0,
+          },
         };
-        setProperties([...properties, newProperty]);
+        setProperties([formattedProperty, ...properties]);
+        alert("Property created successfully!");
       } else if (currentView === AdminView.EDIT && selectedProperty) {
-        // Update existing property
+        // Update existing property in Supabase
+        const updatedProperty = await updateProperty({
+          ...formData,
+          id: selectedProperty.id,
+        });
+        // Convert from snake_case to camelCase
+        const formattedProperty = {
+          id: updatedProperty.id,
+          title: updatedProperty.title,
+          description: updatedProperty.description,
+          location: updatedProperty.location,
+          imageUrl: updatedProperty.image_url,
+          additionalImages: updatedProperty.additional_images || [],
+          minInvestment: updatedProperty.min_investment,
+          expectedROI: updatedProperty.expected_roi,
+          fundingProgress: updatedProperty.funding_progress,
+          fundingGoal: updatedProperty.funding_goal,
+          propertyType: updatedProperty.property_type,
+          features: updatedProperty.features || [],
+          investmentDetails: updatedProperty.investment_details || {
+            term: "5 years",
+            payoutFrequency: "Quarterly",
+            exitStrategy: "Property sale or refinancing",
+            investorCount: 0,
+          },
+        };
         setProperties(
           properties.map((p) =>
-            p.id === selectedProperty.id ? { ...formData, id: p.id } : p,
+            p.id === selectedProperty.id ? formattedProperty : p,
           ),
         );
+        alert("Property updated successfully!");
       }
 
-      setIsFormLoading(false);
       setCurrentView(AdminView.LIST);
-    }, 1000);
+    } catch (error) {
+      console.error("Error saving property:", error);
+      alert(`Error saving property: ${error.message || "Unknown error"}`);
+    } finally {
+      setIsFormLoading(false);
+    }
   };
 
   const handleFormCancel = () => {

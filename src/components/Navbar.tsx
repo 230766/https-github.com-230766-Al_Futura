@@ -57,6 +57,11 @@ const Navbar = ({ transparent = false }: NavbarProps) => {
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               <DropdownMenuItem>
+                <Link to="/properties" className="w-full">
+                  All Properties
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
                 <Link to="/properties/residential" className="w-full">
                   Residential
                 </Link>
@@ -67,8 +72,18 @@ const Navbar = ({ transparent = false }: NavbarProps) => {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <Link to="/properties/development" className="w-full">
-                  Development
+                <Link to="/properties/vacation" className="w-full">
+                  Vacation
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Link to="/properties/retail" className="w-full">
+                  Retail
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Link to="/properties/industrial" className="w-full">
+                  Industrial
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -165,13 +180,36 @@ const Navbar = ({ transparent = false }: NavbarProps) => {
       {isMenuOpen && (
         <div className="md:hidden bg-white absolute top-20 left-0 w-full shadow-md py-4 px-4">
           <div className="flex flex-col space-y-4">
-            <Link
-              to="/properties"
-              className="text-gray-700 hover:text-blue-600 py-2 border-b border-gray-100"
-              onClick={toggleMenu}
-            >
-              Properties
-            </Link>
+            <div className="py-2 border-b border-gray-100">
+              <Link
+                to="/properties"
+                className="text-gray-700 hover:text-blue-600 block py-1"
+                onClick={toggleMenu}
+              >
+                All Properties
+              </Link>
+              <Link
+                to="/properties/residential"
+                className="text-gray-700 hover:text-blue-600 block py-1 pl-4 text-sm"
+                onClick={toggleMenu}
+              >
+                Residential
+              </Link>
+              <Link
+                to="/properties/commercial"
+                className="text-gray-700 hover:text-blue-600 block py-1 pl-4 text-sm"
+                onClick={toggleMenu}
+              >
+                Commercial
+              </Link>
+              <Link
+                to="/properties/vacation"
+                className="text-gray-700 hover:text-blue-600 block py-1 pl-4 text-sm"
+                onClick={toggleMenu}
+              >
+                Vacation
+              </Link>
+            </div>
             <Link
               to="/about"
               className="text-gray-700 hover:text-blue-600 py-2 border-b border-gray-100"

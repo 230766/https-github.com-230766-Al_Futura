@@ -10,6 +10,11 @@ const Signup = lazy(() => import("./pages/Signup"));
 const AdminLayout = lazy(() => import("./pages/admin/AdminLayout"));
 const Dashboard = lazy(() => import("./pages/admin/Dashboard"));
 const PropertyDetailPage = lazy(() => import("./pages/PropertyDetailPage"));
+const About = lazy(() => import("./pages/About"));
+const HowItWorks = lazy(() => import("./pages/HowItWorks"));
+const Contact = lazy(() => import("./pages/Contact"));
+const Properties = lazy(() => import("./pages/Properties"));
+const PropertiesByType = lazy(() => import("./pages/PropertiesByType"));
 
 function App() {
   return (
@@ -27,6 +32,11 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/property/:id" element={<PropertyDetailPage />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/how-it-works" element={<HowItWorks />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/properties" element={<Properties />} />
+            <Route path="/properties/:type" element={<PropertiesByType />} />
 
             {/* Admin Routes */}
             <Route path="/admin" element={<AdminLayout />}>

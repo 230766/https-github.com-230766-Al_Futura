@@ -25,11 +25,19 @@ export interface PropertyFormData {
   description: string;
   location: string;
   imageUrl: string;
+  additionalImages?: string[];
   minInvestment: number;
   expectedROI: number;
   fundingProgress: number;
   fundingGoal: number;
   propertyType: string;
+  features?: string[];
+  investmentDetails?: {
+    term?: string;
+    payoutFrequency?: string;
+    exitStrategy?: string;
+    investorCount?: number;
+  };
 }
 
 interface PropertyFormProps {
@@ -44,11 +52,19 @@ const defaultProperty: PropertyFormData = {
   description: "",
   location: "",
   imageUrl: "",
+  additionalImages: [],
   minInvestment: 500,
   expectedROI: 7.5,
   fundingProgress: 0,
   fundingGoal: 100000,
   propertyType: "Residential",
+  features: [],
+  investmentDetails: {
+    term: "5 years",
+    payoutFrequency: "Quarterly",
+    exitStrategy: "Property sale or refinancing",
+    investorCount: 0,
+  },
 };
 
 const propertyTypes = [
@@ -208,7 +224,7 @@ const PropertyForm = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="imageUrl">Image URL</Label>
+            <Label htmlFor="imageUrl">Main Image URL</Label>
             <Input
               id="imageUrl"
               name="imageUrl"
@@ -219,6 +235,50 @@ const PropertyForm = ({
             {errors.imageUrl && (
               <p className="text-sm text-red-500">{errors.imageUrl}</p>
             )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="additionalImages">
+              Additional Images (One URL per line)
+            </Label>
+            <Textarea
+              id="additionalImages"
+              name="additionalImages"
+              value={formData.additionalImages?.join("\n") || ""}
+              onChange={(e) => {
+                const urls = e.target.value
+                  .split("\n")
+                  .filter((url) => url.trim() !== "");
+                setFormData((prev) => ({
+                  ...prev,
+                  additionalImages: urls,
+                }));
+              }}
+              placeholder="https://example.com/image1.jpg\nhttps://example.com/image2.jpg"
+              rows={3}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="features">
+              Property Features (One feature per line)
+            </Label>
+            <Textarea
+              id="features"
+              name="features"
+              value={formData.features?.join("\n") || ""}
+              onChange={(e) => {
+                const features = e.target.value
+                  .split("\n")
+                  .filter((feature) => feature.trim() !== "");
+                setFormData((prev) => ({
+                  ...prev,
+                  features: features,
+                }));
+              }}
+              placeholder="24/7 Security\nSwimming Pool\nFitness Center"
+              rows={3}
+            />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -297,6 +357,84 @@ const PropertyForm = ({
               {errors.fundingProgress && (
                 <p className="text-sm text-red-500">{errors.fundingProgress}</p>
               )}
+            </div>
+          </div>
+
+          <div className="space-y-4 border-t pt-4 mt-4">
+            <h3 className="font-semibold">Investment Details</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="investmentTerm">Investment Term</Label>
+                <Input
+                  id="investmentTerm"
+                  value={formData.investmentDetails?.term || ""}
+                  onChange={(e) => {
+                    setFormData((prev) => ({
+                      ...prev,
+                      investmentDetails: {
+                        ...prev.investmentDetails,
+                        term: e.target.value,
+                      },
+                    }));
+                  }}
+                  placeholder="5 years"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="payoutFrequency">Payout Frequency</Label>
+                <Input
+                  id="payoutFrequency"
+                  value={formData.investmentDetails?.payoutFrequency || ""}
+                  onChange={(e) => {
+                    setFormData((prev) => ({
+                      ...prev,
+                      investmentDetails: {
+                        ...prev.investmentDetails,
+                        payoutFrequency: e.target.value,
+                      },
+                    }));
+                  }}
+                  placeholder="Quarterly"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="exitStrategy">Exit Strategy</Label>
+                <Input
+                  id="exitStrategy"
+                  value={formData.investmentDetails?.exitStrategy || ""}
+                  onChange={(e) => {
+                    setFormData((prev) => ({
+                      ...prev,
+                      investmentDetails: {
+                        ...prev.investmentDetails,
+                        exitStrategy: e.target.value,
+                      },
+                    }));
+                  }}
+                  placeholder="Property sale or refinancing"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="investorCount">Current Investor Count</Label>
+                <Input
+                  id="investorCount"
+                  type="number"
+                  value={formData.investmentDetails?.investorCount || 0}
+                  onChange={(e) => {
+                    setFormData((prev) => ({
+                      ...prev,
+                      investmentDetails: {
+                        ...prev.investmentDetails,
+                        investorCount: parseInt(e.target.value) || 0,
+                      },
+                    }));
+                  }}
+                  placeholder="0"
+                />
+              </div>
             </div>
           </div>
 

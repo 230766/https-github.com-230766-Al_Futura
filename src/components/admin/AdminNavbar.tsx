@@ -34,7 +34,7 @@ const AdminNavbar = () => {
       <div className="container mx-auto px-4 h-full flex items-center justify-between">
         {/* Logo */}
         <Link to="/admin" className="flex items-center">
-          <div className="text-xl font-bold text-blue-600">Housers Admin</div>
+          <div className="text-xl font-bold text-blue-600">Al Futura Admin</div>
         </Link>
 
         {/* Desktop Navigation */}

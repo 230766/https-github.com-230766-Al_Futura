@@ -54,7 +54,7 @@ const PropertyCard = ({
         <div className="grid grid-cols-2 gap-3 mb-3">
           <div className="bg-gray-50 p-2 rounded">
             <p className="text-xs text-gray-500">Min. Investment</p>
-            <p className="font-semibold text-blue-600">${minInvestment}</p>
+            <p className="font-semibold text-blue-600">AED {minInvestment}</p>
           </div>
           <div className="bg-gray-50 p-2 rounded">
             <p className="text-xs text-gray-500">Expected ROI</p>
@@ -76,8 +76,8 @@ const PropertyCard = ({
             ></div>
           </div>
           <div className="flex justify-between text-xs text-gray-500 mt-1">
-            <span>${(fundingProgress / 1000).toFixed(1)}K raised</span>
-            <span>Goal: ${(fundingGoal / 1000).toFixed(1)}K</span>
+            <span>AED {(fundingProgress / 1000).toFixed(1)}K raised</span>
+            <span>Goal: AED {(fundingGoal / 1000).toFixed(1)}K</span>
           </div>
         </div>
 
@@ -276,7 +276,7 @@ const PropertyGrid = ({
                   />
                 </div>
                 <p className="text-xs text-right mt-1">
-                  ${filters.minInvestment}
+                  AED {filters.minInvestment}
                 </p>
               </div>
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import {
   Card,
   CardContent,
@@ -144,7 +145,7 @@ const InvestmentCalculator = ({
                   <div className="flex items-center bg-blue-50 px-2 py-1 rounded">
                     <DollarSign className="h-4 w-4 text-blue-500 mr-1" />
                     <span className="text-sm font-semibold text-blue-700">
-                      {investmentAmount.toLocaleString()}
+                      AED {investmentAmount.toLocaleString()}
                     </span>
                   </div>
                 </div>
@@ -227,7 +228,7 @@ const InvestmentCalculator = ({
                     </h3>
                   </div>
                   <p className="text-2xl font-bold text-blue-700">
-                    ${Math.round(returns.amount).toLocaleString()}
+                    AED {Math.round(returns.amount).toLocaleString()}
                   </p>
                   <p className="text-sm text-blue-600 mt-1">
                     After {years} {years === 1 ? "year" : "years"}
@@ -243,7 +244,7 @@ const InvestmentCalculator = ({
                     </h3>
                   </div>
                   <p className="text-2xl font-bold text-green-700">
-                    ${Math.round(returns.profit).toLocaleString()}
+                    AED {Math.round(returns.profit).toLocaleString()}
                   </p>
                   <p className="text-sm text-green-600 mt-1">
                     {((returns.profit / investmentAmount) * 100).toFixed(1)}%
@@ -263,7 +264,8 @@ const InvestmentCalculator = ({
                       <div className="flex justify-between items-center">
                         <span className="text-sm">{comparison.name}</span>
                         <span className="text-sm font-medium">
-                          ${Math.round(comparison.finalAmount).toLocaleString()}
+                          AED{" "}
+                          {Math.round(comparison.finalAmount).toLocaleString()}
                         </span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2.5">
@@ -281,9 +283,11 @@ const InvestmentCalculator = ({
               </div>
             </CardContent>
             <CardFooter>
-              <Button className="w-full bg-blue-600 hover:bg-blue-700">
-                Start Investing Now
-              </Button>
+              <Link to="/signup">
+                <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                  Start Investing Now
+                </Button>
+              </Link>
             </CardFooter>
           </Card>
         </div>
