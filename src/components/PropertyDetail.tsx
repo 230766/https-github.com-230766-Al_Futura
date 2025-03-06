@@ -263,7 +263,7 @@ const PropertyDetail = ({
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-gray-50 p-3 rounded-lg">
                     <div className="flex items-center mb-1">
-                      <DollarSign className="h-4 w-4 text-blue-600 mr-1" />
+                      <span className="text-blue-600 mr-1">AED</span>
                       <span className="text-sm text-gray-500">
                         Min. Investment
                       </span>
@@ -303,8 +303,7 @@ const PropertyDetail = ({
                         AED {property.fundingProgress.toLocaleString()} raised
                       </span>
                       <span className="font-medium">
-                        {Math.round(progressPercentage)}% of AED
-                        {property.fundingGoal.toLocaleString()}
+                        {Math.round(progressPercentage)}% of AED {property.fundingGoal.toLocaleString()}
                       </span>
                     </div>
                   </div>
@@ -319,14 +318,14 @@ const PropertyDetail = ({
                     Your Investment Amount
                   </label>
                   <div className="relative">
-                    <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">AED</span>
                     <input
                       type="number"
                       id="investmentAmount"
                       defaultValue={property.minInvestment}
                       min={property.minInvestment}
                       step={100}
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full pl-14 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
@@ -342,8 +341,7 @@ const PropertyDetail = ({
                   <div className="flex justify-between mb-1">
                     <span className="text-gray-700">Annual Return:</span>
                     <span className="font-semibold text-blue-800">
-                      AED
-                      {(
+                      AED {(
                         (property.minInvestment * property.expectedROI) /
                         100
                       ).toLocaleString()}
@@ -352,8 +350,7 @@ const PropertyDetail = ({
                   <div className="flex justify-between">
                     <span className="text-gray-700">5-Year Return:</span>
                     <span className="font-semibold text-blue-800">
-                      AED
-                      {(
+                      AED {(
                         ((property.minInvestment * property.expectedROI) /
                           100) *
                         5

@@ -143,9 +143,9 @@ const InvestmentCalculator = ({
                     Investment Amount
                   </label>
                   <div className="flex items-center bg-blue-50 px-2 py-1 rounded">
-                    <DollarSign className="h-4 w-4 text-blue-500 mr-1" />
+                    <span className="text-blue-500 mr-1">AED</span>
                     <span className="text-sm font-semibold text-blue-700">
-                      AED {investmentAmount.toLocaleString()}
+                      {" "}{investmentAmount.toLocaleString()}
                     </span>
                   </div>
                 </div>
@@ -158,7 +158,7 @@ const InvestmentCalculator = ({
                   className="my-4"
                 />
                 <div className="flex items-center space-x-2">
-                  <DollarSign className="h-4 w-4 text-gray-500" />
+                  <span className="text-gray-500">AED</span>
                   <Input
                     type="number"
                     value={investmentAmount}
@@ -264,8 +264,7 @@ const InvestmentCalculator = ({
                       <div className="flex justify-between items-center">
                         <span className="text-sm">{comparison.name}</span>
                         <span className="text-sm font-medium">
-                          AED{" "}
-                          {Math.round(comparison.finalAmount).toLocaleString()}
+                          AED {Math.round(comparison.finalAmount).toLocaleString()}
                         </span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2.5">

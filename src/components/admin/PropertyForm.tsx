@@ -285,7 +285,7 @@ const PropertyForm = ({
             <div className="space-y-2">
               <Label htmlFor="minInvestment">Minimum Investment</Label>
               <div className="relative">
-                <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">AED </span>
                 <Input
                   id="minInvestment"
                   name="minInvestment"
@@ -293,7 +293,7 @@ const PropertyForm = ({
                   value={formData.minInvestment}
                   onChange={handleChange}
                   placeholder="500"
-                  className="pl-10"
+                  className="pl-16"
                 />
               </div>
               {errors.minInvestment && (
@@ -324,7 +324,7 @@ const PropertyForm = ({
             <div className="space-y-2">
               <Label htmlFor="fundingGoal">Funding Goal</Label>
               <div className="relative">
-                <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">AED </span>
                 <Input
                   id="fundingGoal"
                   name="fundingGoal"
@@ -332,7 +332,7 @@ const PropertyForm = ({
                   value={formData.fundingGoal}
                   onChange={handleChange}
                   placeholder="100000"
-                  className="pl-10"
+                  className="pl-16"
                 />
               </div>
               {errors.fundingGoal && (
@@ -343,7 +343,7 @@ const PropertyForm = ({
             <div className="space-y-2">
               <Label htmlFor="fundingProgress">Current Funding</Label>
               <div className="relative">
-                <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">AED </span>
                 <Input
                   id="fundingProgress"
                   name="fundingProgress"
@@ -351,7 +351,7 @@ const PropertyForm = ({
                   value={formData.fundingProgress}
                   onChange={handleChange}
                   placeholder="0"
-                  className="pl-10"
+                  className="pl-16"
                 />
               </div>
               {errors.fundingProgress && (

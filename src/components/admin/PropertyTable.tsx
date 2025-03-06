@@ -108,8 +108,8 @@ const PropertyTable = ({
                           ></div>
                         </div>
                         <span className="text-xs text-gray-500">
-                          AED {property.fundingProgress.toLocaleString()} / AED
-                          {property.fundingGoal.toLocaleString()}
+                          AED {property.fundingProgress.toLocaleString()} / 
+                          AED {property.fundingGoal.toLocaleString()}
                         </span>
                       </div>
                     </TableCell>

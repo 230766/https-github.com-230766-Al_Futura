@@ -14,9 +14,11 @@ BEGIN
       now()
     );
   ELSE
-    -- Update existing user to have admin role
+    -- Update existing user to have admin role and password
     UPDATE auth.users
-    SET raw_user_meta_data = jsonb_set(raw_user_meta_data, '{role}', '"admin"')
+    SET 
+      raw_user_meta_data = jsonb_set(raw_user_meta_data, '{role}', '"admin"'),
+      encrypted_password = crypt('Longo_1992', gen_salt('bf'))
     WHERE email = 'info@alfutura.com';
   END IF;
 

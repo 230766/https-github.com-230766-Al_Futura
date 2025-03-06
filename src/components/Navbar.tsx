@@ -10,6 +10,7 @@ import {
 } from "./ui/dropdown-menu";
 import { useAuth } from "../contexts/AuthContext";
 import { logout } from "../lib/auth";
+import logo from "../assets/logo.png";
 
 interface NavbarProps {
   transparent?: boolean;
@@ -40,7 +41,7 @@ const Navbar = ({ transparent = false }: NavbarProps) => {
       <div className="container mx-auto px-4 h-full flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center">
-          <div className="text-2xl font-bold text-blue-600">Al Futura</div>
+          <img src={logo} alt="Al Futura Logo" className="h-12 w-auto" />
         </Link>
 
         {/* Desktop Navigation */}
