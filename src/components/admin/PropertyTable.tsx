@@ -92,7 +92,7 @@ const PropertyTable = ({
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      ${property.minInvestment.toLocaleString()}
+                      AED {property.minInvestment.toLocaleString()}
                     </TableCell>
                     <TableCell className="text-green-600">
                       {property.expectedROI}%
@@ -108,7 +108,7 @@ const PropertyTable = ({
                           ></div>
                         </div>
                         <span className="text-xs text-gray-500">
-                          ${property.fundingProgress.toLocaleString()} / $
+                          AED {property.fundingProgress.toLocaleString()} / AED
                           {property.fundingGoal.toLocaleString()}
                         </span>
                       </div>

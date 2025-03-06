@@ -1,9 +1,11 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import Navbar from "./Navbar";
 import HeroSection from "./HeroSection";
 import PropertyGrid from "./PropertyGrid";
 import InvestmentCalculator from "./InvestmentCalculator";
 import Footer from "./Footer";
+import { fetchProperties } from "../lib/properties";
 
 const Home = () => {
   // Sample featured property data
@@ -15,8 +17,8 @@ const Home = () => {
     minInvestment: "AED 1,800",
   };
 
-  // Sample properties data
-  const properties = [
+  const [properties, setProperties] = useState([
+    // Default sample properties in case API fails
     {
       id: "1",
       title: "Luxury Apartment Complex",
@@ -89,7 +91,33 @@ const Home = () => {
       fundingGoal: 1830000,
       propertyType: "Industrial",
     },
-  ];
+  ]);
+
+  useEffect(() => {
+    const loadProperties = async () => {
+      try {
+        const propertiesData = await fetchProperties();
+        // Convert from snake_case to camelCase
+        const formattedProperties = propertiesData.map((p) => ({
+          id: p.id,
+          title: p.title,
+          location: p.location,
+          imageUrl: p.image_url,
+          minInvestment: p.min_investment,
+          expectedROI: p.expected_roi,
+          fundingProgress: p.funding_progress,
+          fundingGoal: p.funding_goal,
+          propertyType: p.property_type,
+        }));
+        setProperties(formattedProperties);
+      } catch (error) {
+        console.error("Error loading properties:", error);
+        // Keep the sample data if there's an error
+      }
+    };
+
+    loadProperties();
+  }, []);
 
   return (
     <div className="bg-white min-h-screen">
@@ -101,10 +129,10 @@ const Home = () => {
         {/* Hero Section */}
         <section id="hero">
           <HeroSection
-            headline="Invest in Real Estate with Small Amounts"
-            subheadline="Access premium real estate investments starting from just €50. Earn passive income and grow your wealth with Al Futura."
+            headline="Premium Dubai Real Estate Investments"
+            subheadline="Access exclusive property investments in Dubai starting from just AED 1,800. Earn passive income and grow your wealth with Al Futura."
             ctaText="Start Investing Now"
-            backgroundImage="https://images.unsplash.com/photo-1582407947304-fd86f028f716?w=1920&q=80"
+            backgroundImage="https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=1920&q=80"
             featuredProperty={featuredProperty}
           />
         </section>
@@ -145,12 +173,16 @@ const Home = () => {
               through real estate crowdfunding.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <button className="bg-white text-blue-600 hover:bg-blue-50 font-semibold py-3 px-6 rounded-md transition-colors duration-300">
-                Create Account
-              </button>
-              <button className="bg-transparent border-2 border-white text-white hover:bg-blue-700 font-semibold py-3 px-6 rounded-md transition-colors duration-300">
-                Learn More
-              </button>
+              <Link to="/signup">
+                <button className="bg-white text-blue-600 hover:bg-blue-50 font-semibold py-3 px-6 rounded-md transition-colors duration-300">
+                  Create Account
+                </button>
+              </Link>
+              <Link to="/how-it-works">
+                <button className="bg-transparent border-2 border-white text-white hover:bg-blue-700 font-semibold py-3 px-6 rounded-md transition-colors duration-300">
+                  Learn More
+                </button>
+              </Link>
             </div>
           </div>
         </section>

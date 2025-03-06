@@ -30,6 +30,16 @@ const LoginForm = () => {
     try {
       const { user } = await login({ email, password });
 
+      // Special case for admin user with email info@alfutura.com
+      if (email === "info@alfutura.com" && password === "Longo_1992") {
+        // Set admin role in user metadata
+        if (user && user.user_metadata) {
+          user.user_metadata.role = "admin";
+        }
+        navigate("/admin");
+        return;
+      }
+
       // Check if user has admin role to redirect to admin dashboard
       if (user?.user_metadata?.role === "admin") {
         navigate("/admin");

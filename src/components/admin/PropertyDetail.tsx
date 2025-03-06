@@ -49,6 +49,7 @@ const PropertyDetail = ({ property, onBack, onEdit }: PropertyDetailProps) => {
         </Badge>
       </CardHeader>
       <CardContent className="space-y-6">
+        {/* Main Image */}
         <div className="aspect-video w-full overflow-hidden rounded-lg">
           <img
             src={property.imageUrl}
@@ -56,6 +57,24 @@ const PropertyDetail = ({ property, onBack, onEdit }: PropertyDetailProps) => {
             className="w-full h-full object-cover"
           />
         </div>
+
+        {/* Additional Images */}
+        {property.additionalImages && property.additionalImages.length > 0 && (
+          <div className="grid grid-cols-3 gap-4">
+            {property.additionalImages.map((img, index) => (
+              <div
+                key={index}
+                className="aspect-video overflow-hidden rounded-lg"
+              >
+                <img
+                  src={img}
+                  alt={`${property.title} - view ${index + 1}`}
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                />
+              </div>
+            ))}
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-4">
@@ -77,6 +96,23 @@ const PropertyDetail = ({ property, onBack, onEdit }: PropertyDetailProps) => {
                 {property.description || "No description provided."}
               </p>
             </div>
+
+            {/* Property Features */}
+            {property.features && property.features.length > 0 && (
+              <div>
+                <h3 className="text-lg font-semibold mb-2">
+                  Property Features
+                </h3>
+                <div className="grid grid-cols-2 gap-2">
+                  {property.features.map((feature, index) => (
+                    <div key={index} className="flex items-center">
+                      <div className="h-2 w-2 rounded-full bg-blue-600 mr-2"></div>
+                      <span className="text-gray-700">{feature}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="space-y-4">
@@ -93,7 +129,7 @@ const PropertyDetail = ({ property, onBack, onEdit }: PropertyDetailProps) => {
                     </span>
                   </div>
                   <p className="text-lg font-semibold">
-                    ${property.minInvestment.toLocaleString()}
+                    AED {property.minInvestment.toLocaleString()}
                   </p>
                 </div>
 
@@ -120,15 +156,77 @@ const PropertyDetail = ({ property, onBack, onEdit }: PropertyDetailProps) => {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">
-                    ${property.fundingProgress.toLocaleString()} raised
+                    AED {property.fundingProgress.toLocaleString()} raised
                   </span>
                   <span className="font-medium">
-                    {Math.round(progressPercentage)}% of $
+                    {Math.round(progressPercentage)}% of AED
                     {property.fundingGoal.toLocaleString()}
                   </span>
                 </div>
               </div>
             </div>
+
+            {/* Investment Details */}
+            {property.investmentDetails && (
+              <div>
+                <h3 className="text-lg font-semibold mb-2">
+                  Investment Details
+                </h3>
+                <div className="grid grid-cols-1 gap-3">
+                  {property.investmentDetails.term && (
+                    <div className="bg-gray-50 p-3 rounded-lg">
+                      <div className="flex items-center mb-1">
+                        <span className="text-sm text-gray-500">
+                          Investment Term
+                        </span>
+                      </div>
+                      <p className="text-gray-700">
+                        {property.investmentDetails.term}
+                      </p>
+                    </div>
+                  )}
+
+                  {property.investmentDetails.payoutFrequency && (
+                    <div className="bg-gray-50 p-3 rounded-lg">
+                      <div className="flex items-center mb-1">
+                        <span className="text-sm text-gray-500">
+                          Payout Frequency
+                        </span>
+                      </div>
+                      <p className="text-gray-700">
+                        {property.investmentDetails.payoutFrequency}
+                      </p>
+                    </div>
+                  )}
+
+                  {property.investmentDetails.exitStrategy && (
+                    <div className="bg-gray-50 p-3 rounded-lg">
+                      <div className="flex items-center mb-1">
+                        <span className="text-sm text-gray-500">
+                          Exit Strategy
+                        </span>
+                      </div>
+                      <p className="text-gray-700">
+                        {property.investmentDetails.exitStrategy}
+                      </p>
+                    </div>
+                  )}
+
+                  {property.investmentDetails.investorCount > 0 && (
+                    <div className="bg-gray-50 p-3 rounded-lg">
+                      <div className="flex items-center mb-1">
+                        <span className="text-sm text-gray-500">
+                          Current Investors
+                        </span>
+                      </div>
+                      <p className="text-gray-700">
+                        {property.investmentDetails.investorCount} investors
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </CardContent>
