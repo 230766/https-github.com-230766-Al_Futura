@@ -22,9 +22,37 @@ import {
 } from "lucide-react";
 import Navbar from "./Navbar";
 import { supabase } from "../lib/supabase";
-import type { Property } from "../lib/supabase";
-import type { Json } from "../lib/database.types";
+// import type { Property } from "../lib/supabase";
+// import type { Json } from "../lib/database.types";
 import { useAuth } from "../contexts/AuthContext";
+
+// Define Json type locally
+type Json = string | number | boolean | null | { [key: string]: Json } | Json[];
+
+// Define Property type with investment_details
+interface Property {
+  id: string;
+  title: string;
+  description: string;
+  location: string;
+  image_url: string;
+  additional_images: string[];
+  property_type: string;
+  min_investment: number;
+  expected_roi: number;
+  investment_term: number;
+  features: string[];
+  investment_details: {
+    term: string;
+    payoutFrequency: string;
+    exitStrategy: string;
+    investorCount: number;
+  } | null;
+  funding_progress: number;
+  funding_goal: number;
+  created_at: string;
+  updated_at: string;
+}
 
 interface InvestmentDetails {
   term: string;

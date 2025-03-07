@@ -18,12 +18,35 @@ import {
   updateProperty,
   deleteProperty,
 } from "../../lib/properties";
-import { getFeatures, getInvestmentDetails } from '../components/PropertyDetail';
 import { toast } from "react-hot-toast";
 import { supabase } from "../../lib/supabase";
 import { Database } from "../../lib/database.types";
 
-type Property = Database['public']['Tables']['properties']['Row'];
+// Define Property type with investment_details
+interface Property {
+  id: string;
+  title: string;
+  description: string;
+  location: string;
+  image_url: string;
+  additional_images: string[];
+  property_type: string;
+  min_investment: number;
+  expected_roi: number;
+  investment_term: number;
+  features: string[];
+  investment_details: {
+    term: string;
+    payoutFrequency: string;
+    exitStrategy: string;
+    investorCount: number;
+  } | null;
+  funding_progress: number;
+  funding_goal: number;
+  is_featured?: boolean;
+  created_at: string;
+  updated_at: string;
+}
 
 interface PropertyFormData {
   id?: string;
@@ -142,6 +165,21 @@ const sampleProperties = [
     propertyType: "Industrial",
   },
 ];
+
+// Define helper functions locally
+const getFeatures = (features: any): string[] => {
+  if (Array.isArray(features)) {
+    return features as string[];
+  }
+  return [];
+};
+
+const getInvestmentDetails = (details: any): any => {
+  if (details && typeof details === 'object' && !Array.isArray(details)) {
+    return details;
+  }
+  return null;
+};
 
 const Dashboard = () => {
   const navigate = useNavigate();

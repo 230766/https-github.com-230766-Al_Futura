@@ -9,7 +9,30 @@ import { Star, MapPin, Home, DollarSign, Percent } from 'lucide-react';
 import { Dialog, DialogContent } from './ui/dialog';
 import PropertyDetail from './PropertyDetail';
 
-type Property = Database['public']['Tables']['properties']['Row'];
+// Define Property type with investment_details
+interface Property {
+  id: string;
+  title: string;
+  description: string;
+  location: string;
+  image_url: string;
+  additional_images: string[];
+  property_type: string;
+  min_investment: number;
+  expected_roi: number;
+  investment_term: number;
+  features: string[];
+  investment_details: {
+    term: string;
+    payoutFrequency: string;
+    exitStrategy: string;
+    investorCount: number;
+  } | null;
+  funding_progress: number;
+  funding_goal: number;
+  created_at: string;
+  updated_at: string;
+}
 
 export const FeaturedProperty = () => {
   const [property, setProperty] = useState<Property | null>(null);

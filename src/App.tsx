@@ -4,6 +4,7 @@ import Home from "./components/home";
 import routes from "tempo-routes";
 import { AuthProvider } from "./contexts/AuthContext";
 import { Toaster } from "react-hot-toast";
+import Footer from './components/Footer';
 
 // Lazy load pages for better performance
 const Login = lazy(() => import("./pages/Login"));
@@ -18,6 +19,24 @@ const Properties = lazy(() => import("./pages/Properties"));
 const PropertiesByType = lazy(() => import("./pages/PropertiesByType"));
 const InvestmentPage = lazy(() => import("./pages/InvestmentPage"));
 
+// Company Pages
+const TeamPage = lazy(() => import('./pages/company/Team'));
+const CareersPage = lazy(() => import('./pages/company/Careers'));
+const PressPage = lazy(() => import('./pages/company/Press'));
+
+// Resource Pages
+const BlogPage = lazy(() => import('./pages/resources/Blog'));
+const GuidesPage = lazy(() => import('./pages/resources/Guides'));
+const FAQPage = lazy(() => import('./pages/resources/FAQ'));
+const HelpCenterPage = lazy(() => import('./pages/help/HelpCenter'));
+
+// Legal Pages
+const TermsPage = lazy(() => import('./pages/legal/Terms'));
+const PrivacyPage = lazy(() => import('./pages/legal/Privacy'));
+const CookiePolicyPage = lazy(() => import('./pages/legal/CookiePolicy'));
+const InvestorProtectionPage = lazy(() => import('./pages/legal/InvestorProtection'));
+const RiskDisclosurePage = lazy(() => import('./pages/legal/RiskDisclosure'));
+
 function App() {
   return (
     <AuthProvider>
@@ -28,30 +47,51 @@ function App() {
           </div>
         }
       >
-        <>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
-            <Route path="/property/:id" element={<PropertyDetailPage />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/how-it-works" element={<HowItWorks />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/properties" element={<Properties />} />
-            <Route path="/properties/:type" element={<PropertiesByType />} />
-            <Route path="/invest/:id" element={<InvestmentPage />} />
+        <div className="min-h-screen flex flex-col">
+          <div className="flex-grow">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/property/:id" element={<PropertyDetailPage />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/how-it-works" element={<HowItWorks />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/properties" element={<Properties />} />
+              <Route path="/properties/:type" element={<PropertiesByType />} />
+              <Route path="/invest/:id" element={<InvestmentPage />} />
 
-            {/* Admin Routes */}
-            <Route path="/admin" element={<AdminLayout />}>
-              <Route index element={<Dashboard />} />
-            </Route>
+              {/* Company Routes */}
+              <Route path="/team" element={<TeamPage />} />
+              <Route path="/careers" element={<CareersPage />} />
+              <Route path="/press" element={<PressPage />} />
 
-            {import.meta.env.VITE_TEMPO === "true" && (
-              <Route path="/tempobook/*" />
-            )}
-          </Routes>
-          {import.meta.env.VITE_TEMPO === "true" && useRoutes(routes)}
-        </>
+              {/* Resource Routes */}
+              <Route path="/blog" element={<BlogPage />} />
+              <Route path="/guides" element={<GuidesPage />} />
+              <Route path="/faq" element={<FAQPage />} />
+              <Route path="/help" element={<HelpCenterPage />} />
+
+              {/* Legal Routes */}
+              <Route path="/terms" element={<TermsPage />} />
+              <Route path="/privacy" element={<PrivacyPage />} />
+              <Route path="/cookie-policy" element={<CookiePolicyPage />} />
+              <Route path="/investor-protection" element={<InvestorProtectionPage />} />
+              <Route path="/risk-disclosure" element={<RiskDisclosurePage />} />
+
+              {/* Admin Routes */}
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route index element={<Dashboard />} />
+              </Route>
+
+              {import.meta.env.VITE_TEMPO === "true" && (
+                <Route path="/tempobook/*" />
+              )}
+            </Routes>
+            {import.meta.env.VITE_TEMPO === "true" && useRoutes(routes)}
+          </div>
+          <Footer />
+        </div>
         <Toaster position="top-right" />
       </Suspense>
     </AuthProvider>

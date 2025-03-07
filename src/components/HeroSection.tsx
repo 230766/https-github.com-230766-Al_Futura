@@ -9,6 +9,13 @@ interface HeroSectionProps {
   subheadline?: string;
   ctaText?: string;
   backgroundImage?: string;
+  featuredProperty?: {
+    title: string;
+    location: string;
+    roi: string;
+    fundingProgress: number;
+    minInvestment: string;
+  };
 }
 
 const HeroSection = ({

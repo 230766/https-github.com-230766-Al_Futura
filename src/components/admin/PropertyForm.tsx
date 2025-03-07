@@ -18,7 +18,9 @@ import {
   CardTitle,
 } from "../ui/card";
 import { MapPin, Home, DollarSign, Percent, X } from "lucide-react";
-import { Json } from '../lib/database.types';
+
+// Add a simple Json type definition
+type Json = string | number | boolean | null | { [key: string]: Json } | Json[];
 
 export interface PropertyFormData {
   id?: string;
