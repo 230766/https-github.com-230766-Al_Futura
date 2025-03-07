@@ -11,8 +11,10 @@ import {
 } from "../ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Badge } from "../ui/badge";
-import { Search, Edit, Trash2, Plus, Eye } from "lucide-react";
+import { Search, Edit, Trash2, Plus, Eye, Star } from "lucide-react";
 import { PropertyFormData } from "./PropertyForm";
+import { supabase } from "../../lib/supabase";
+import { toast } from "sonner";
 
 interface PropertyTableProps {
   properties: PropertyFormData[];
@@ -20,6 +22,7 @@ interface PropertyTableProps {
   onEdit: (property: PropertyFormData) => void;
   onDelete: (propertyId: string) => void;
   onAdd: () => void;
+  onRefresh: () => void;
 }
 
 const PropertyTable = ({
@@ -28,8 +31,10 @@ const PropertyTable = ({
   onEdit,
   onDelete,
   onAdd,
+  onRefresh,
 }: PropertyTableProps) => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState<string | null>(null);
 
   const filteredProperties = properties.filter((property) => {
     const searchLower = searchTerm.toLowerCase();
@@ -39,6 +44,50 @@ const PropertyTable = ({
       property.propertyType.toLowerCase().includes(searchLower)
     );
   });
+
+  const handleSetFeatured = async (property: PropertyFormData) => {
+    try {
+      setLoading(property.id || null);
+      console.log('Setting property as featured:', property.id);
+
+      // First, unset all featured properties
+      const { error: clearError } = await supabase
+        .from('properties')
+        .update({ 
+          is_featured: false,
+          updated_at: new Date().toISOString()
+        })
+        .eq('is_featured', true);
+
+      if (clearError) {
+        console.error('Error clearing other featured properties:', clearError);
+        throw clearError;
+      }
+
+      // Then set this property as featured
+      const { error: updateError } = await supabase
+        .from('properties')
+        .update({ 
+          is_featured: true,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', property.id);
+
+      if (updateError) {
+        console.error('Error setting property as featured:', updateError);
+        throw updateError;
+      }
+
+      console.log('Successfully updated featured status');
+      toast.success('Property set as featured');
+      onRefresh();
+    } catch (error: any) {
+      console.error('Error updating featured property:', error);
+      toast.error(error?.message || 'Failed to update featured property');
+    } finally {
+      setLoading(null);
+    }
+  };
 
   return (
     <Card className="w-full bg-white">
@@ -72,6 +121,7 @@ const PropertyTable = ({
                 <TableHead>Min. Investment</TableHead>
                 <TableHead>ROI</TableHead>
                 <TableHead>Funding</TableHead>
+                <TableHead>Featured</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -113,6 +163,18 @@ const PropertyTable = ({
                         </span>
                       </div>
                     </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleSetFeatured(property)}
+                        disabled={loading === property.id}
+                        className={property.is_featured ? "bg-yellow-50 text-yellow-800 hover:bg-yellow-100" : ""}
+                      >
+                        <Star className={`h-4 w-4 mr-1 ${property.is_featured ? "fill-current" : ""}`} />
+                        {property.is_featured ? "Featured" : "Set as Featured"}
+                      </Button>
+                    </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end space-x-2">
                         <Button
@@ -146,7 +208,7 @@ const PropertyTable = ({
               ) : (
                 <TableRow>
                   <TableCell
-                    colSpan={7}
+                    colSpan={8}
                     className="text-center py-6 text-gray-500"
                   >
                     {searchTerm

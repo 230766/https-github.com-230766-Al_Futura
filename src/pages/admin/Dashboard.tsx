@@ -10,7 +10,6 @@ import PropertyTable from "../../components/admin/PropertyTable";
 import PropertyForm from "../../components/admin/PropertyForm";
 import PropertyDetail from "../../components/admin/PropertyDetail";
 import DeleteConfirmDialog from "../../components/admin/DeleteConfirmDialog";
-import { PropertyFormData } from "../../components/admin/PropertyForm";
 import { v4 as uuidv4 } from "uuid";
 import { useAuth } from "../../contexts/AuthContext";
 import {
@@ -19,6 +18,34 @@ import {
   updateProperty,
   deleteProperty,
 } from "../../lib/properties";
+import { getFeatures, getInvestmentDetails } from '../components/PropertyDetail';
+import { toast } from "react-hot-toast";
+import { supabase } from "../../lib/supabase";
+import { Database } from "../../lib/database.types";
+
+type Property = Database['public']['Tables']['properties']['Row'];
+
+interface PropertyFormData {
+  id?: string;
+  title: string;
+  description: string;
+  location: string;
+  imageUrl: string;
+  additionalImages: string[];
+  minInvestment: number;
+  expectedROI: number;
+  fundingProgress: number;
+  fundingGoal: number;
+  propertyType: string;
+  features: string[];
+  investmentDetails: {
+    term: string;
+    payoutFrequency: string;
+    exitStrategy: string;
+    investorCount: number;
+  };
+  is_featured?: boolean;
+}
 
 // Define view types as string constants instead of enum
 const AdminView = {
@@ -144,33 +171,43 @@ const Dashboard = () => {
   // Load properties from Supabase
   const loadProperties = async () => {
     try {
-      const propertiesData = await fetchProperties();
-      // Convert from snake_case to camelCase
-      const formattedProperties = propertiesData.map((p) => ({
-        id: p.id,
-        title: p.title,
-        description: p.description,
-        location: p.location,
-        imageUrl: p.image_url,
-        additionalImages: p.additional_images || [],
-        minInvestment: p.min_investment,
-        expectedROI: p.expected_roi,
-        fundingProgress: p.funding_progress,
-        fundingGoal: p.funding_goal,
-        propertyType: p.property_type,
-        features: p.features || [],
-        investmentDetails: p.investment_details || {
-          term: "5 years",
-          payoutFrequency: "Quarterly",
-          exitStrategy: "Property sale or refinancing",
-          investorCount: 0,
+      const { data: properties, error } = await supabase
+        .from('properties')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching properties:', error);
+        throw error;
+      }
+
+      const formattedProperties = (properties as Property[]).map(property => ({
+        id: property.id,
+        title: property.title,
+        description: property.description,
+        location: property.location,
+        imageUrl: property.image_url,
+        additionalImages: property.additional_images || [],
+        minInvestment: property.min_investment,
+        expectedROI: property.expected_roi,
+        fundingProgress: property.funding_progress,
+        fundingGoal: property.funding_goal,
+        propertyType: property.property_type,
+        features: property.features || [],
+        investmentDetails: property.investment_details || {
+          term: '',
+          payoutFrequency: '',
+          exitStrategy: '',
+          investorCount: 0
         },
+        is_featured: Boolean(property.is_featured)
       }));
+
+      console.log('Loaded properties:', formattedProperties);
       setProperties(formattedProperties);
     } catch (error) {
-      console.error("Error loading properties:", error);
-      // If no properties are found, use sample data
-      setProperties(sampleProperties);
+      console.error('Error loading properties:', error);
+      toast.error('Failed to load properties');
     }
   };
 
@@ -296,6 +333,10 @@ const Dashboard = () => {
     setCurrentView(AdminView.LIST);
   };
 
+  const handleRefreshProperties = async () => {
+    await loadProperties();
+  };
+
   // Show loading state while checking authentication
   if (isLoading) {
     return (
@@ -331,6 +372,7 @@ const Dashboard = () => {
                 onEdit={handleEditProperty}
                 onDelete={handleDeleteProperty}
                 onAdd={handleAddProperty}
+                onRefresh={handleRefreshProperties}
               />
             )}
 

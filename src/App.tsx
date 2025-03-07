@@ -3,6 +3,7 @@ import { useRoutes, Routes, Route } from "react-router-dom";
 import Home from "./components/home";
 import routes from "tempo-routes";
 import { AuthProvider } from "./contexts/AuthContext";
+import { Toaster } from "react-hot-toast";
 
 // Lazy load pages for better performance
 const Login = lazy(() => import("./pages/Login"));
@@ -15,6 +16,7 @@ const HowItWorks = lazy(() => import("./pages/HowItWorks"));
 const Contact = lazy(() => import("./pages/Contact"));
 const Properties = lazy(() => import("./pages/Properties"));
 const PropertiesByType = lazy(() => import("./pages/PropertiesByType"));
+const InvestmentPage = lazy(() => import("./pages/InvestmentPage"));
 
 function App() {
   return (
@@ -37,6 +39,7 @@ function App() {
             <Route path="/contact" element={<Contact />} />
             <Route path="/properties" element={<Properties />} />
             <Route path="/properties/:type" element={<PropertiesByType />} />
+            <Route path="/invest/:id" element={<InvestmentPage />} />
 
             {/* Admin Routes */}
             <Route path="/admin" element={<AdminLayout />}>
@@ -49,6 +52,7 @@ function App() {
           </Routes>
           {import.meta.env.VITE_TEMPO === "true" && useRoutes(routes)}
         </>
+        <Toaster position="top-right" />
       </Suspense>
     </AuthProvider>
   );

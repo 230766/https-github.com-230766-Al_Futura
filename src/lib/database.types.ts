@@ -39,51 +39,54 @@ export interface Database {
         Row: {
           id: string
           title: string
-          description: string | null
+          description: string
           location: string
           image_url: string
+          additional_images: string[]
+          property_type: string
           min_investment: number
           expected_roi: number
+          investment_term: number
           funding_progress: number
           funding_goal: number
-          property_type: string
-          features: Json | null
-          investment_details: Json | null
-          additional_images: string[] | null
+          features: string[]
+          is_featured: boolean
           created_at: string
           updated_at: string
         }
         Insert: {
           id?: string
           title: string
-          description?: string | null
+          description: string
           location: string
           image_url: string
+          additional_images?: string[]
+          property_type: string
           min_investment: number
           expected_roi: number
+          investment_term: number
           funding_progress?: number
           funding_goal: number
-          property_type: string
-          features?: Json | null
-          investment_details?: Json | null
-          additional_images?: string[] | null
+          features?: string[]
+          is_featured?: boolean
           created_at?: string
           updated_at?: string
         }
         Update: {
           id?: string
           title?: string
-          description?: string | null
+          description?: string
           location?: string
           image_url?: string
+          additional_images?: string[]
+          property_type?: string
           min_investment?: number
           expected_roi?: number
+          investment_term?: number
           funding_progress?: number
           funding_goal?: number
-          property_type?: string
-          features?: Json | null
-          investment_details?: Json | null
-          additional_images?: string[] | null
+          features?: string[]
+          is_featured?: boolean
           created_at?: string
           updated_at?: string
         }
@@ -125,4 +128,7 @@ export interface Database {
       [_ in never]: never
     }
   }
-} 
+}
+
+export type Tables<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Row']
+export type Enums<T extends keyof Database['public']['Enums']> = Database['public']['Enums'][T] 

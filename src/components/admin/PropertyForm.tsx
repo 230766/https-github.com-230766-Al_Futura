@@ -18,6 +18,7 @@ import {
   CardTitle,
 } from "../ui/card";
 import { MapPin, Home, DollarSign, Percent, X } from "lucide-react";
+import { Json } from '../lib/database.types';
 
 export interface PropertyFormData {
   id?: string;
@@ -25,19 +26,20 @@ export interface PropertyFormData {
   description: string;
   location: string;
   imageUrl: string;
-  additionalImages?: string[];
+  additionalImages: string[];
   minInvestment: number;
   expectedROI: number;
   fundingProgress: number;
   fundingGoal: number;
   propertyType: string;
-  features?: string[];
-  investmentDetails?: {
-    term?: string;
-    payoutFrequency?: string;
-    exitStrategy?: string;
-    investorCount?: number;
+  features: string[];
+  investmentDetails: {
+    term: string;
+    payoutFrequency: string;
+    exitStrategy: string;
+    investorCount: number;
   };
+  is_featured?: boolean;
 }
 
 interface PropertyFormProps {
@@ -118,6 +120,18 @@ const PropertyForm = ({
       ...prev,
       propertyType: value,
     }));
+  };
+
+  const handleAdditionalImagesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const urls = e.target.value.split("\n").filter((url) => url.trim() !== "");
+    setFormData((prev) => ({
+      ...prev,
+      additionalImages: urls,
+    }));
+
+    // Automatically adjust textarea height
+    e.target.style.height = 'auto';
+    e.target.style.height = `${e.target.scrollHeight}px`;
   };
 
   const validateForm = (): boolean => {
@@ -245,18 +259,13 @@ const PropertyForm = ({
               id="additionalImages"
               name="additionalImages"
               value={formData.additionalImages?.join("\n") || ""}
-              onChange={(e) => {
-                const urls = e.target.value
-                  .split("\n")
-                  .filter((url) => url.trim() !== "");
-                setFormData((prev) => ({
-                  ...prev,
-                  additionalImages: urls,
-                }));
-              }}
-              placeholder="https://example.com/image1.jpg\nhttps://example.com/image2.jpg"
-              rows={3}
+              onChange={handleAdditionalImagesChange}
+              placeholder="https://example.com/image1.jpg&#10;https://example.com/image2.jpg&#10;https://example.com/image3.jpg"
+              className="min-h-[100px] resize-y"
             />
+            <p className="text-sm text-gray-500">
+              Add multiple image URLs, one per line. The textarea will expand as you add more URLs.
+            </p>
           </div>
 
           <div className="space-y-2">

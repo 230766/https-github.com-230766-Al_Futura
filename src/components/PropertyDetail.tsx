@@ -18,115 +18,133 @@ import {
   ArrowLeft,
   Users,
   Calendar,
+  Check,
 } from "lucide-react";
 import Navbar from "./Navbar";
+import { supabase } from "../lib/supabase";
+import type { Property } from "../lib/supabase";
+import type { Json } from "../lib/database.types";
+import { useAuth } from "../contexts/AuthContext";
+
+interface InvestmentDetails {
+  term: string;
+  payoutFrequency: string;
+  exitStrategy: string;
+  investorCount: number;
+}
 
 interface PropertyDetailProps {
   id?: string;
-  property?: any;
+  property?: Property;
+  hideNavigation?: boolean;
 }
 
-const PropertyDetail = ({
-  id,
-  property: propProperty,
-}: PropertyDetailProps) => {
+const PropertyDetail = ({ id, property: propProperty, hideNavigation = false }: PropertyDetailProps) => {
   const params = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const propertyId = id || params.id;
+  const [property, setProperty] = React.useState<Property | null>(null);
+  const [loading, setLoading] = React.useState(true);
 
-  // This would normally come from an API call using the ID
-  // For now we'll use sample data
-  const sampleProperties = [
-    {
-      id: "1",
-      title: "Luxury Apartment Complex",
-      description:
-        "A premium residential complex with high-end amenities in the heart of Downtown Dubai. Features include 24/7 security, swimming pool, fitness center, and landscaped gardens. Each unit offers modern finishes, spacious layouts, and balconies with stunning Burj Khalifa views.",
-      location: "Downtown Dubai, UAE",
-      imageUrl:
-        "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&q=80",
-      minInvestment: 1800,
-      expectedROI: 8.5,
-      fundingProgress: 240000,
-      fundingGoal: 370000,
-      propertyType: "Residential",
-      additionalImages: [
-        "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80",
-        "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&q=80",
-        "https://images.unsplash.com/photo-1560185127-6ed189bf02f4?w=800&q=80",
-      ],
-      features: [
-        "24/7 Security",
-        "Swimming Pool",
-        "Fitness Center",
-        "Landscaped Gardens",
-        "Underground Parking",
-        "Concierge Service",
-      ],
-      investmentDetails: {
-        term: "5 years",
-        payoutFrequency: "Quarterly",
-        exitStrategy: "Property sale or refinancing",
-        investorCount: 127,
-      },
-    },
-    {
-      id: "2",
-      title: "Commercial Office Building",
-      description:
-        "Modern office space in Dubai's Business Bay district with excellent connectivity. The property features open floor plans, high-speed internet infrastructure, meeting rooms, and a rooftop terrace. Located near major transportation hubs and business centers.",
-      location: "Business Bay, Dubai",
-      imageUrl:
-        "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=800&q=80",
-      minInvestment: 3700,
-      expectedROI: 7.2,
-      fundingProgress: 440000,
-      fundingGoal: 920000,
-      propertyType: "Commercial",
-      additionalImages: [
-        "https://images.unsplash.com/photo-1497215842964-222b430dc094?w=800&q=80",
-        "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=800&q=80",
-        "https://images.unsplash.com/photo-1604328698692-f76ea9498e76?w=800&q=80",
-      ],
-      features: [
-        "Open Floor Plans",
-        "High-Speed Internet",
-        "Meeting Rooms",
-        "Rooftop Terrace",
-        "24/7 Access",
-        "Parking Facilities",
-      ],
-      investmentDetails: {
-        term: "7 years",
-        payoutFrequency: "Monthly",
-        exitStrategy: "Long-term lease agreements with corporate tenants",
-        investorCount: 89,
-      },
-    },
-    // Add more properties as needed
-  ];
+  // Helper function to safely type check and cast JSON fields
+  const getFeatures = (features: Property['features']): string[] => {
+    if (Array.isArray(features)) {
+      return features as string[];
+    }
+    return [];
+  };
 
-  const property =
-    propProperty ||
-    sampleProperties.find((p) => p.id === propertyId) ||
-    sampleProperties[0];
+  const getInvestmentDetails = (details: Property['investment_details']): InvestmentDetails | null => {
+    if (details && typeof details === 'object' && !Array.isArray(details)) {
+      const d = details as { [key: string]: Json };
+      return {
+        term: String(d.term || ''),
+        payoutFrequency: String(d.payoutFrequency || ''),
+        exitStrategy: String(d.exitStrategy || ''),
+        investorCount: Number(d.investorCount || 0)
+      };
+    }
+    return null;
+  };
 
-  const progressPercentage =
-    (property.fundingProgress / property.fundingGoal) * 100;
+  const handleInvestClick = () => {
+    if (!user) {
+      navigate('/signin', { state: { returnTo: `/properties/${propertyId}` } });
+      return;
+    }
+    // If user is logged in, proceed with investment flow
+    navigate(`/invest/${propertyId}`);
+  };
+
+  React.useEffect(() => {
+    if (propProperty) {
+      setProperty(propProperty);
+      setLoading(false);
+      return;
+    }
+
+    async function fetchProperty() {
+      try {
+        const { data, error } = await supabase
+          .from('properties')
+          .select('*')
+          .eq('id', propertyId)
+          .single();
+
+        if (error) throw error;
+        setProperty(data);
+      } catch (error) {
+        console.error('Error fetching property:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchProperty();
+  }, [propertyId, propProperty]);
+
+  if (loading) {
+    return (
+      <div className={hideNavigation ? "bg-white" : "min-h-screen bg-gray-50"}>
+        {!hideNavigation && <Navbar />}
+        <div className="container mx-auto px-4 pt-24 pb-12">
+          <div className="text-center">Loading property details...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!property) {
+    return (
+      <div className={hideNavigation ? "bg-white" : "min-h-screen bg-gray-50"}>
+        {!hideNavigation && <Navbar />}
+        <div className="container mx-auto px-4 pt-24 pb-12">
+          <div className="text-center">Property not found</div>
+        </div>
+      </div>
+    );
+  }
+
+  const progressPercentage = (property.funding_progress / property.funding_goal) * 100;
+  const features = getFeatures(property.features);
+  const investmentDetails = getInvestmentDetails(property.investment_details);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
+    <div className={hideNavigation ? "bg-white" : "min-h-screen bg-gray-50"}>
+      {!hideNavigation && <Navbar />}
 
-      <div className="container mx-auto px-4 pt-24 pb-12">
-        <Button
-          variant="ghost"
-          onClick={() => navigate(-1)}
-          className="mb-6 flex items-center text-blue-600 hover:text-blue-800"
-        >
-          <ArrowLeft className="mr-2 h-5 w-5" />
-          Back to properties
-        </Button>
+      <div className={`container mx-auto px-4 ${hideNavigation ? 'py-6' : 'pt-24 pb-12'}`}>
+        {!hideNavigation && (
+          <Button
+            variant="ghost"
+            onClick={() => navigate(-1)}
+            className="mb-6 flex items-center text-blue-600 hover:text-blue-800"
+          >
+            <ArrowLeft className="mr-2 h-5 w-5" />
+            Back to properties
+          </Button>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
@@ -138,7 +156,7 @@ const PropertyDetail = ({
                   {property.title}
                 </h1>
                 <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">
-                  {property.propertyType}
+                  {property.property_type}
                 </Badge>
               </div>
               <div className="flex items-center text-gray-600">
@@ -150,16 +168,16 @@ const PropertyDetail = ({
             {/* Main Image */}
             <div className="aspect-video w-full overflow-hidden rounded-lg">
               <img
-                src={property.imageUrl}
+                src={property.image_url}
                 alt={property.title}
                 className="w-full h-full object-cover"
               />
             </div>
 
             {/* Additional Images */}
-            {property.additionalImages && (
+            {property.additional_images && property.additional_images.length > 0 && (
               <div className="grid grid-cols-3 gap-4">
-                {property.additionalImages.map((img, index) => (
+                {property.additional_images.map((img, index) => (
                   <div
                     key={index}
                     className="aspect-video overflow-hidden rounded-lg"
@@ -185,186 +203,126 @@ const PropertyDetail = ({
             </div>
 
             {/* Features */}
-            {property.features && (
+            {features.length > 0 && (
               <div>
                 <h2 className="text-xl font-semibold mb-4">
                   Property Features
                 </h2>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {property.features.map((feature, index) => (
+                  {features.map((feature, index) => (
                     <div key={index} className="flex items-center">
-                      <div className="h-2 w-2 rounded-full bg-blue-600 mr-2"></div>
+                      <Check className="h-5 w-5 text-blue-600 mr-2" />
                       <span className="text-gray-700">{feature}</span>
                     </div>
                   ))}
                 </div>
               </div>
             )}
-
-            {/* Investment Details */}
-            {property.investmentDetails && (
-              <div>
-                <h2 className="text-xl font-semibold mb-4">
-                  Investment Details
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="bg-white p-4 rounded-lg shadow-sm">
-                    <div className="flex items-center mb-2">
-                      <Calendar className="h-5 w-5 text-blue-600 mr-2" />
-                      <h3 className="font-medium">Investment Term</h3>
-                    </div>
-                    <p className="text-gray-700">
-                      {property.investmentDetails.term}
-                    </p>
-                  </div>
-
-                  <div className="bg-white p-4 rounded-lg shadow-sm">
-                    <div className="flex items-center mb-2">
-                      <TrendingUp className="h-5 w-5 text-blue-600 mr-2" />
-                      <h3 className="font-medium">Payout Frequency</h3>
-                    </div>
-                    <p className="text-gray-700">
-                      {property.investmentDetails.payoutFrequency}
-                    </p>
-                  </div>
-
-                  <div className="bg-white p-4 rounded-lg shadow-sm">
-                    <div className="flex items-center mb-2">
-                      <Users className="h-5 w-5 text-blue-600 mr-2" />
-                      <h3 className="font-medium">Current Investors</h3>
-                    </div>
-                    <p className="text-gray-700">
-                      {property.investmentDetails.investorCount} investors
-                    </p>
-                  </div>
-
-                  <div className="bg-white p-4 rounded-lg shadow-sm">
-                    <div className="flex items-center mb-2">
-                      <Home className="h-5 w-5 text-blue-600 mr-2" />
-                      <h3 className="font-medium">Exit Strategy</h3>
-                    </div>
-                    <p className="text-gray-700">
-                      {property.investmentDetails.exitStrategy}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
 
-          {/* Investment Card */}
+          {/* Investment Details Sidebar */}
           <div className="lg:col-span-1">
-            <Card className="sticky top-24 bg-white shadow-lg">
-              <CardHeader>
-                <CardTitle>Investment Summary</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Investment Stats */}
+            <div className="bg-white p-6 rounded-lg shadow-lg sticky top-24 space-y-6">
+              <div>
+                <h3 className="text-xl font-semibold mb-4">Investment Summary</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-gray-50 p-3 rounded-lg">
                     <div className="flex items-center mb-1">
-                      <span className="text-blue-600 mr-1">AED</span>
+                      <DollarSign className="h-4 w-4 text-blue-600 mr-1" />
                       <span className="text-sm text-gray-500">
                         Min. Investment
                       </span>
                     </div>
                     <p className="text-lg font-semibold">
-                      AED {property.minInvestment.toLocaleString()}
+                      AED {property.min_investment.toLocaleString()}
                     </p>
                   </div>
 
                   <div className="bg-gray-50 p-3 rounded-lg">
                     <div className="flex items-center mb-1">
-                      <TrendingUp className="h-4 w-4 text-green-600 mr-1" />
+                      <Percent className="h-4 w-4 text-green-600 mr-1" />
                       <span className="text-sm text-gray-500">
                         Expected ROI
                       </span>
                     </div>
                     <p className="text-lg font-semibold text-green-600">
-                      {property.expectedROI}%
+                      {property.expected_roi}%
                     </p>
                   </div>
                 </div>
+              </div>
 
-                {/* Funding Progress */}
-                <div>
-                  <h3 className="text-sm font-medium mb-2">Funding Progress</h3>
-                  <div className="space-y-2">
-                    <div className="w-full bg-gray-200 rounded-full h-2.5">
-                      <div
-                        className="bg-blue-600 h-2.5 rounded-full"
-                        style={{
-                          width: `${Math.min(100, progressPercentage)}%`,
-                        }}
-                      ></div>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">
-                        AED {property.fundingProgress.toLocaleString()} raised
+              {/* Funding Progress */}
+              <div>
+                <div className="flex justify-between text-sm mb-1">
+                  <span className="text-gray-600">Funding Progress</span>
+                  <span className="font-medium text-blue-600">
+                    {Math.round(progressPercentage)}%
+                  </span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div
+                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${progressPercentage}%` }}
+                  ></div>
+                </div>
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>
+                    AED {(property.funding_progress / 1000).toFixed(1)}K raised
+                  </span>
+                  <span>
+                    Goal: AED {(property.funding_goal / 1000).toFixed(1)}K
+                  </span>
+                </div>
+              </div>
+
+              {/* Investment Details */}
+              {investmentDetails && (
+                <div className="space-y-4">
+                  <div className="bg-gray-50 p-3 rounded-lg">
+                    <div className="flex items-center mb-1">
+                      <Calendar className="h-4 w-4 text-blue-600 mr-1" />
+                      <span className="text-sm text-gray-500">
+                        Investment Term
                       </span>
-                      <span className="font-medium">
-                        {Math.round(progressPercentage)}% of AED {property.fundingGoal.toLocaleString()}
+                    </div>
+                    <p className="text-gray-700">{investmentDetails.term}</p>
+                  </div>
+
+                  <div className="bg-gray-50 p-3 rounded-lg">
+                    <div className="flex items-center mb-1">
+                      <TrendingUp className="h-4 w-4 text-blue-600 mr-1" />
+                      <span className="text-sm text-gray-500">
+                        Payout Frequency
                       </span>
                     </div>
+                    <p className="text-gray-700">
+                      {investmentDetails.payoutFrequency}
+                    </p>
                   </div>
-                </div>
 
-                {/* Investment Amount Input */}
-                <div>
-                  <label
-                    htmlFor="investmentAmount"
-                    className="block text-sm font-medium mb-2"
-                  >
-                    Your Investment Amount
-                  </label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">AED</span>
-                    <input
-                      type="number"
-                      id="investmentAmount"
-                      defaultValue={property.minInvestment}
-                      min={property.minInvestment}
-                      step={100}
-                      className="w-full pl-14 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
+                  <div className="bg-gray-50 p-3 rounded-lg">
+                    <div className="flex items-center mb-1">
+                      <Users className="h-4 w-4 text-blue-600 mr-1" />
+                      <span className="text-sm text-gray-500">
+                        Current Investors
+                      </span>
+                    </div>
+                    <p className="text-gray-700">
+                      {investmentDetails.investorCount} investors
+                    </p>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Minimum investment: AED {property.minInvestment}
-                  </p>
                 </div>
+              )}
 
-                {/* Projected Returns */}
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <h3 className="text-sm font-medium mb-2 text-blue-800">
-                    Projected Returns
-                  </h3>
-                  <div className="flex justify-between mb-1">
-                    <span className="text-gray-700">Annual Return:</span>
-                    <span className="font-semibold text-blue-800">
-                      AED {(
-                        (property.minInvestment * property.expectedROI) /
-                        100
-                      ).toLocaleString()}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-700">5-Year Return:</span>
-                    <span className="font-semibold text-blue-800">
-                      AED {(
-                        ((property.minInvestment * property.expectedROI) /
-                          100) *
-                        5
-                      ).toLocaleString()}
-                    </span>
-                  </div>
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-                  Invest Now
-                </Button>
-              </CardFooter>
-            </Card>
+              {/* Invest Button */}
+              <Button
+                onClick={handleInvestClick}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold h-12"
+              >
+                Invest Now
+              </Button>
+            </div>
           </div>
         </div>
       </div>
