@@ -89,6 +89,7 @@ const PropertyForm = ({
     initialData || defaultProperty,
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [singleImageUrl, setSingleImageUrl] = useState("");
 
   useEffect(() => {
     if (initialData) {
@@ -134,6 +135,91 @@ const PropertyForm = ({
     // Automatically adjust textarea height
     e.target.style.height = 'auto';
     e.target.style.height = `${e.target.scrollHeight}px`;
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // If Enter key is pressed
+    if (e.key === 'Enter') {
+      // Get current cursor position
+      const textarea = e.currentTarget;
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      
+      // Get current value
+      const currentValue = textarea.value;
+      
+      // Insert newline at cursor position
+      const newValue = 
+        currentValue.substring(0, start) + 
+        '\n' + 
+        currentValue.substring(end);
+      
+      // Update form data
+      const urls = newValue.split("\n").filter((url) => url.trim() !== "");
+      setFormData((prev) => ({
+        ...prev,
+        additionalImages: urls,
+      }));
+      
+      // Set cursor position after the inserted newline
+      const newPosition = start + 1;
+      setTimeout(() => {
+        textarea.setSelectionRange(newPosition, newPosition);
+        
+        // Adjust textarea height
+        textarea.style.height = 'auto';
+        textarea.style.height = `${textarea.scrollHeight}px`;
+      }, 0);
+      
+      // Prevent default Enter behavior
+      e.preventDefault();
+    }
+  };
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    // Get current cursor position
+    const textarea = e.currentTarget;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    
+    // Get pasted content
+    const pastedText = e.clipboardData.getData('text');
+    
+    // Check if pasted content is a URL and doesn't already end with a newline
+    if (pastedText.trim().startsWith('http') && !pastedText.endsWith('\n')) {
+      // Prevent default paste
+      e.preventDefault();
+      
+      // Get current value
+      const currentValue = textarea.value;
+      
+      // Insert pasted text with a newline at cursor position
+      const newValue = 
+        currentValue.substring(0, start) + 
+        pastedText + 
+        '\n' + 
+        currentValue.substring(end);
+      
+      // Update form data
+      const urls = newValue.split("\n").filter((url) => url.trim() !== "");
+      setFormData((prev) => ({
+        ...prev,
+        additionalImages: urls,
+      }));
+      
+      // Update textarea value
+      textarea.value = newValue;
+      
+      // Set cursor position after the inserted text + newline
+      const newPosition = start + pastedText.length + 1;
+      setTimeout(() => {
+        textarea.setSelectionRange(newPosition, newPosition);
+        
+        // Adjust textarea height
+        textarea.style.height = 'auto';
+        textarea.style.height = `${textarea.scrollHeight}px`;
+      }, 0);
+    }
   };
 
   const validateForm = (): boolean => {
@@ -254,20 +340,102 @@ const PropertyForm = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="additionalImages">
-              Additional Images (One URL per line)
-            </Label>
+            <div className="flex justify-between items-center">
+              <Label htmlFor="additionalImages">
+                Additional Images (One URL per line)
+              </Label>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-500">
+                  {formData.additionalImages.length} image{formData.additionalImages.length !== 1 ? 's' : ''}
+                </span>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setFormData(prev => ({ ...prev, additionalImages: [] }))}
+                >
+                  Clear All
+                </Button>
+              </div>
+            </div>
             <Textarea
               id="additionalImages"
               name="additionalImages"
               value={formData.additionalImages?.join("\n") || ""}
               onChange={handleAdditionalImagesChange}
+              onKeyDown={handleKeyDown}
+              onPaste={handlePaste}
               placeholder="https://example.com/image1.jpg&#10;https://example.com/image2.jpg&#10;https://example.com/image3.jpg"
-              className="min-h-[100px] resize-y"
+              rows={5}
+              className="min-h-[120px] resize-y"
+              style={{ whiteSpace: 'pre-wrap' }}
             />
             <p className="text-sm text-gray-500">
-              Add multiple image URLs, one per line. The textarea will expand as you add more URLs.
+              Add multiple image URLs, one per line. URLs will be automatically separated when you paste them.
             </p>
+            
+            <div className="mt-4 flex space-x-2">
+              <Input
+                type="text"
+                placeholder="https://example.com/image.jpg"
+                value={singleImageUrl}
+                onChange={(e) => setSingleImageUrl(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && singleImageUrl.trim()) {
+                    e.preventDefault();
+                    if (singleImageUrl.trim().startsWith('http')) {
+                      setFormData(prev => ({
+                        ...prev,
+                        additionalImages: [...prev.additionalImages, singleImageUrl.trim()]
+                      }));
+                      setSingleImageUrl('');
+                    }
+                  }
+                }}
+              />
+              <Button
+                type="button"
+                onClick={() => {
+                  if (singleImageUrl.trim().startsWith('http')) {
+                    setFormData(prev => ({
+                      ...prev,
+                      additionalImages: [...prev.additionalImages, singleImageUrl.trim()]
+                    }));
+                    setSingleImageUrl('');
+                  }
+                }}
+                disabled={!singleImageUrl.trim().startsWith('http')}
+              >
+                Add
+              </Button>
+            </div>
+            
+            {formData.additionalImages.length > 0 && (
+              <div className="mt-4 space-y-2">
+                <p className="text-sm font-medium">Current Images:</p>
+                <div className="space-y-2 max-h-[200px] overflow-y-auto p-2 border rounded-md">
+                  {formData.additionalImages.map((url, index) => (
+                    <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
+                      <div className="text-sm truncate max-w-[80%]" title={url}>
+                        {url}
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          const newImages = [...formData.additionalImages];
+                          newImages.splice(index, 1);
+                          setFormData(prev => ({ ...prev, additionalImages: newImages }));
+                        }}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">

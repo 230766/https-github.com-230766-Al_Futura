@@ -48,55 +48,63 @@ const InvestmentCalculator = ({
   const [investmentAmount, setInvestmentAmount] =
     useState<number>(initialAmount);
   const [years, setYears] = useState<number>(defaultYears);
+  const [annualReturn, setAnnualReturn] = useState<number>(expectedAnnualReturn);
   const [returns, setReturns] = useState<{
     amount: number;
-    profit: number;
-    annualReturn: number;
-    comparisons: Array<{
+    breakdown: Array<{
       name: string;
-      finalAmount: number;
-      profit: number;
+      amount: number;
+      annualReturn: number;
       color: string;
     }>;
   }>({
     amount: 0,
-    profit: 0,
-    annualReturn: expectedAnnualReturn,
-    comparisons: [],
+    breakdown: [
+      {
+        name: "Real Estate",
+        amount: 0,
+        annualReturn: annualReturn,
+        color: "#0ea5e9",
+      },
+    ],
   });
 
   // Calculate investment returns
   useEffect(() => {
     const calculateReturns = () => {
-      // Calculate main investment return
-      const finalAmount =
-        investmentAmount * Math.pow(1 + expectedAnnualReturn / 100, years);
-      const profit = finalAmount - investmentAmount;
+      // Calculate real estate investment return
+      const realEstateReturn =
+        investmentAmount * Math.pow(1 + annualReturn / 100, years);
 
       // Calculate comparison investments
-      const comparisons = comparisonInvestments.map((investment) => {
-        const comparisonFinalAmount =
-          investmentAmount * Math.pow(1 + investment.annualReturn / 100, years);
-        const comparisonProfit = comparisonFinalAmount - investmentAmount;
-
+      const breakdown = comparisonInvestments.map((investment) => {
+        const amount =
+          investmentAmount *
+          Math.pow(1 + investment.annualReturn / 100, years);
         return {
           name: investment.name,
-          finalAmount: comparisonFinalAmount,
-          profit: comparisonProfit,
+          amount,
+          annualReturn: investment.annualReturn,
           color: investment.color,
         };
       });
 
+      // Add real estate as the first item
+      breakdown.unshift({
+        name: "Real Estate",
+        amount: realEstateReturn,
+        annualReturn: annualReturn,
+        color: "#0ea5e9",
+      });
+
       setReturns({
-        amount: finalAmount,
-        profit: profit,
-        annualReturn: expectedAnnualReturn,
-        comparisons: comparisons,
+        amount: realEstateReturn,
+        breakdown,
       });
     };
 
     calculateReturns();
-  }, [investmentAmount, years, expectedAnnualReturn, comparisonInvestments]);
+  }, [investmentAmount, years, annualReturn, comparisonInvestments]);
 
   // Handle investment amount change from slider
   const handleAmountSliderChange = (value: number[]) => {
@@ -114,6 +122,19 @@ const InvestmentCalculator = ({
   // Handle years change from slider
   const handleYearsSliderChange = (value: number[]) => {
     setYears(value[0]);
+  };
+
+  // Handle annual return slider change
+  const handleReturnSliderChange = (value: number[]) => {
+    setAnnualReturn(value[0]);
+  };
+
+  // Handle annual return input change
+  const handleReturnInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseFloat(e.target.value);
+    if (!isNaN(value) && value >= 0 && value <= 20) {
+      setAnnualReturn(value);
+    }
   };
 
   return (
@@ -201,9 +222,30 @@ const InvestmentCalculator = ({
                   <div className="flex items-center bg-blue-50 px-2 py-1 rounded">
                     <Percent className="h-4 w-4 text-blue-500 mr-1" />
                     <span className="text-sm font-semibold text-blue-700">
-                      {expectedAnnualReturn}%
+                      {annualReturn.toFixed(1)}%
                     </span>
                   </div>
+                </div>
+                <Slider
+                  defaultValue={[annualReturn]}
+                  min={1}
+                  max={20}
+                  step={0.5}
+                  value={[annualReturn]}
+                  onValueChange={handleReturnSliderChange}
+                  className="my-4"
+                />
+                <div className="flex items-center">
+                  <span className="text-sm font-medium mr-2">%</span>
+                  <Input
+                    type="number"
+                    min={1}
+                    max={20}
+                    step={0.1}
+                    value={annualReturn}
+                    onChange={handleReturnInputChange}
+                    className="w-full"
+                  />
                 </div>
               </div>
             </CardContent>
@@ -244,10 +286,10 @@ const InvestmentCalculator = ({
                     </h3>
                   </div>
                   <p className="text-2xl font-bold text-green-700">
-                    AED {Math.round(returns.profit).toLocaleString()}
+                    AED {Math.round(returns.amount - investmentAmount).toLocaleString()}
                   </p>
                   <p className="text-sm text-green-600 mt-1">
-                    {((returns.profit / investmentAmount) * 100).toFixed(1)}%
+                    {((returns.amount - investmentAmount) / investmentAmount * 100).toFixed(1)}%
                     return on investment
                   </p>
                 </div>
@@ -259,20 +301,20 @@ const InvestmentCalculator = ({
                   Investment Comparison
                 </h3>
                 <div className="space-y-3">
-                  {returns.comparisons.map((comparison, index) => (
+                  {returns.breakdown.map((investment, index) => (
                     <div key={index} className="space-y-1">
                       <div className="flex justify-between items-center">
-                        <span className="text-sm">{comparison.name}</span>
+                        <span className="text-sm">{investment.name}</span>
                         <span className="text-sm font-medium">
-                          AED {Math.round(comparison.finalAmount).toLocaleString()}
+                          AED {Math.round(investment.amount).toLocaleString()}
                         </span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2.5">
                         <div
                           className="h-2.5 rounded-full"
                           style={{
-                            width: `${Math.min(100, (comparison.finalAmount / (maxAmount * 2)) * 100)}%`,
-                            backgroundColor: comparison.color,
+                            width: `${Math.min(100, (investment.amount / (maxAmount * 2)) * 100)}%`,
+                            backgroundColor: investment.color,
                           }}
                         ></div>
                       </div>

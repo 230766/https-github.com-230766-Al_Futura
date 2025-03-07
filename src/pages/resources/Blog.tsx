@@ -52,7 +52,7 @@ const BlogPage = () => {
       <HeroSection2
         title="Blog"
         description="Insights and analysis from our real estate experts"
-        imageUrl="/dubai/dubai-business-bay.jpg"
+        imageUrl="/dubai/dubai-palm-jumeirah-aerial.jpg"
       />
       <div className="container mx-auto px-4 py-12">
         <div className="mt-8">

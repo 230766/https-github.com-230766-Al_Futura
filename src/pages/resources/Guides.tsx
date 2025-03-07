@@ -38,7 +38,7 @@ const GuidesPage = () => {
       <HeroSection2
         title="Guides"
         description="Explore our comprehensive guides to real estate investing"
-        imageUrl="/dubai/dubai-desert.jpg"
+        imageUrl="/dubai/dubai-desert-sunset.jpg"
       />
       <div className="container mx-auto px-4 py-12">
         <div className="mt-12 max-w-4xl mx-auto">

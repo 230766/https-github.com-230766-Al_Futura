@@ -44,7 +44,7 @@ const RiskDisclosurePage = () => {
       <HeroSection2
         title="Risk Disclosure"
         description="Understand the risks involved in real estate investments"
-        imageUrl="/dubai/dubai-skyline.jpg"
+        imageUrl="/dubai/dubai-marina-night-reflection.jpg"
       />
       <div className="container mx-auto px-4 py-12">
         {/* Important Notice */}

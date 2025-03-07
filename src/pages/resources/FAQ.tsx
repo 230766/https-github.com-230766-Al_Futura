@@ -92,7 +92,7 @@ const FAQPage = () => {
       <HeroSection2
         title="Frequently Asked Questions"
         description="Find answers to common questions about Al Futura"
-        imageUrl="/dubai/dubai-palm-jumeirah.jpg"
+        imageUrl="/dubai/dubai-fountain-show.jpg"
       />
       <div className="container mx-auto px-4 py-12">
         <div className="mt-8">

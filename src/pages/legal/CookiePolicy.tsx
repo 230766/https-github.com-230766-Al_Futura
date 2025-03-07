@@ -74,7 +74,7 @@ const CookiePolicyPage = () => {
       <HeroSection2
         title="Cookie Policy"
         description="Understanding how we use cookies on our platform"
-        imageUrl="/dubai/dubai-marina-day.jpg"
+        imageUrl="/dubai/dubai-frame-landmark.jpg"
       />
       <div className="container mx-auto px-4 py-12">
         <div className="mt-12 max-w-4xl mx-auto">

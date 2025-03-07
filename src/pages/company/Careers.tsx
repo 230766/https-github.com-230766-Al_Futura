@@ -35,9 +35,9 @@ const CareersPage = () => {
     <>
       <Navbar transparent={true} />
       <HeroSection2
-        title="Careers at Al Futura"
-        description="Join us in revolutionizing real estate investment"
-        imageUrl="/dubai/dubai-downtown.jpg"
+        title="Careers"
+        description="Join our team and shape the future of real estate investing"
+        imageUrl="/dubai/dubai-marina-aerial.jpg"
       />
       <div className="container mx-auto px-4 py-12">
         <div className="mt-12">

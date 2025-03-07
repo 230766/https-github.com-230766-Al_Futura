@@ -87,7 +87,7 @@ const PrivacyPage = () => {
       <HeroSection2
         title="Privacy Policy"
         description="How we protect and handle your personal information"
-        imageUrl="/dubai/dubai-downtown.jpg"
+        imageUrl="/dubai/dubai-mall-interior.jpg"
       />
       <div className="container mx-auto px-4 py-12">
         <div className="mt-12 max-w-4xl mx-auto">

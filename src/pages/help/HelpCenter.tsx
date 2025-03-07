@@ -77,7 +77,7 @@ const HelpCenterPage = () => {
       <HeroSection2
         title="Help Center"
         description="Find answers and support for all your questions"
-        imageUrl="/dubai/dubai-mall.jpg"
+        imageUrl="/dubai/dubai-skyscrapers-blue.jpg"
       />
       <div className="container mx-auto px-4 py-12">
         {/* Search */}

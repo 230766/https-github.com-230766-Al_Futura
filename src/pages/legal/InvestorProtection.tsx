@@ -1,6 +1,7 @@
 import React from 'react';
 import { PageHeader } from '../../components/PageHeader';
 import { Shield, Lock, FileCheck, Scale } from 'lucide-react';
+import HeroSection2 from '../../components/HeroSection2';
 
 const protectionMeasures = [
   {
@@ -28,9 +29,10 @@ const protectionMeasures = [
 const InvestorProtectionPage = () => {
   return (
     <div className="min-h-screen bg-white">
-      <PageHeader
+      <HeroSection2
         title="Investor Protection"
-        description="Learn about the measures we take to protect your investments and interests."
+        description="Learn about the measures we take to protect your investments"
+        imageUrl="/dubai/dubai-downtown-sunset.jpg"
       />
       
       <div className="container mx-auto px-4 py-16">

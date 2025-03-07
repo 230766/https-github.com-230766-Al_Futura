@@ -3,8 +3,9 @@ import { Card } from "./ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Input } from "./ui/input";
 import { Slider } from "./ui/slider";
-import { Search, MapPin, Home, TrendingUp, Users } from "lucide-react";
+import { Search, MapPin, Home, TrendingUp, Users, ChevronLeft, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { Button } from "./ui/button";
 
 // Improved PropertyCard component
 interface PropertyCardProps {
@@ -186,44 +187,74 @@ const PropertyGrid = ({
   description = "Discover high-yield real estate investment opportunities with low minimum investments.",
 }: PropertyGridProps) => {
   const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filters, setFilters] = useState<FilterOptions>({
+  const [activeTab, setActiveTab] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const propertiesPerPage = 6;
+
+  // Filter options
+  const [filterOptions, setFilterOptions] = useState<FilterOptions>({
     propertyType: "all",
-    minInvestment: 500,
-    expectedROI: 5,
-    location: "all",
+    minInvestment: 0,
+    expectedROI: 0,
+    location: "",
   });
 
-  const [activeTab, setActiveTab] = useState("all");
-
-  // Filter properties based on search term and filters
+  // Filter properties based on active tab, search query, and filter options
   const filteredProperties = properties.filter((property) => {
-    // Search term filter
+    // Filter by tab (property type)
+    if (activeTab !== "all" && property.propertyType.toLowerCase() !== activeTab) {
+      return false;
+    }
+
+    // Filter by search query
     if (
-      searchTerm &&
-      !property.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      !property.location.toLowerCase().includes(searchTerm.toLowerCase())
+      searchQuery &&
+      !property.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
+      !property.location.toLowerCase().includes(searchQuery.toLowerCase())
     ) {
       return false;
     }
 
-    // Property type filter
-    if (activeTab !== "all" && property.propertyType !== activeTab) {
-      return false;
-    }
-
-    // Min investment filter
-    if (property.minInvestment < filters.minInvestment) {
-      return false;
-    }
-
-    // Expected ROI filter
-    if (property.expectedROI < filters.expectedROI) {
+    // Filter by custom filters
+    if (
+      (filterOptions.propertyType !== "all" &&
+        property.propertyType !== filterOptions.propertyType) ||
+      property.minInvestment < filterOptions.minInvestment ||
+      property.expectedROI < filterOptions.expectedROI ||
+      (filterOptions.location &&
+        !property.location
+          .toLowerCase()
+          .includes(filterOptions.location.toLowerCase()))
+    ) {
       return false;
     }
 
     return true;
   });
+
+  // Calculate pagination
+  const indexOfLastProperty = currentPage * propertiesPerPage;
+  const indexOfFirstProperty = indexOfLastProperty - propertiesPerPage;
+  const currentProperties = filteredProperties.slice(indexOfFirstProperty, indexOfLastProperty);
+  const totalPages = Math.ceil(filteredProperties.length / propertiesPerPage);
+
+  // Change page
+  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+  
+  // Go to next page
+  const nextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+  
+  // Go to previous page
+  const prevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
 
   // Get unique property types for tabs
   const propertyTypes = [
@@ -233,6 +264,24 @@ const PropertyGrid = ({
 
   const handlePropertyClick = (propertyId: string) => {
     navigate(`/property/${propertyId}`);
+  };
+
+  // Handle tab change
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    setCurrentPage(1); // Reset to first page when tab changes
+  };
+
+  // Handle search query change
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+    setCurrentPage(1); // Reset to first page when search changes
+  };
+
+  // Handle filter changes
+  const handleFilterChange = (newFilters: Partial<FilterOptions>) => {
+    setFilterOptions({ ...filterOptions, ...newFilters });
+    setCurrentPage(1); // Reset to first page when filters change
   };
 
   return (
@@ -257,8 +306,8 @@ const PropertyGrid = ({
                 type="text"
                 placeholder="Search by property name or location"
                 className="pl-10"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                value={searchQuery}
+                onChange={handleSearchChange}
               />
             </div>
 
@@ -267,16 +316,16 @@ const PropertyGrid = ({
                 <p className="text-sm text-gray-500 mb-1">Min. Investment</p>
                 <div className="px-2">
                   <Slider
-                    defaultValue={[filters.minInvestment]}
+                    defaultValue={[filterOptions.minInvestment]}
                     max={2000}
                     step={100}
                     onValueChange={(value) =>
-                      setFilters({ ...filters, minInvestment: value[0] })
+                      handleFilterChange({ minInvestment: value[0] })
                     }
                   />
                 </div>
                 <p className="text-xs text-right mt-1">
-                  AED {filters.minInvestment}
+                  AED {filterOptions.minInvestment}
                 </p>
               </div>
 
@@ -284,16 +333,16 @@ const PropertyGrid = ({
                 <p className="text-sm text-gray-500 mb-1">Min. Expected ROI</p>
                 <div className="px-2">
                   <Slider
-                    defaultValue={[filters.expectedROI]}
+                    defaultValue={[filterOptions.expectedROI]}
                     max={10}
                     step={0.5}
                     onValueChange={(value) =>
-                      setFilters({ ...filters, expectedROI: value[0] })
+                      handleFilterChange({ expectedROI: value[0] })
                     }
                   />
                 </div>
                 <p className="text-xs text-right mt-1">
-                  {filters.expectedROI}%
+                  {filterOptions.expectedROI}%
                 </p>
               </div>
             </div>
@@ -303,7 +352,7 @@ const PropertyGrid = ({
           <Tabs
             defaultValue="all"
             value={activeTab}
-            onValueChange={setActiveTab}
+            onValueChange={handleTabChange}
           >
             <TabsList className="mb-6">
               {propertyTypes.map((type) => (
@@ -328,7 +377,7 @@ const PropertyGrid = ({
               <TabsContent key={type} value={type} className="mt-0">
                 {/* Property grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredProperties.map((property) => (
+                  {currentProperties.map((property) => (
                     <PropertyCard
                       key={property.id}
                       {...property}
@@ -345,14 +394,14 @@ const PropertyGrid = ({
                     <button
                       className="mt-4 text-blue-600 hover:text-blue-800"
                       onClick={() => {
-                        setSearchTerm("");
-                        setFilters({
+                        setSearchQuery("");
+                        handleFilterChange({
                           propertyType: "all",
-                          minInvestment: 500,
-                          expectedROI: 5,
-                          location: "all",
+                          minInvestment: 0,
+                          expectedROI: 0,
+                          location: "",
                         });
-                        setActiveTab("all");
+                        handleTabChange("all");
                       }}
                     >
                       Reset Filters
@@ -364,9 +413,52 @@ const PropertyGrid = ({
           </Tabs>
         </div>
 
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center mt-8">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={prevPage}
+              disabled={currentPage === 1}
+              className="mr-2"
+            >
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              Prev
+            </Button>
+            
+            <div className="flex space-x-1">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((number) => (
+                <Button
+                  key={number}
+                  variant={currentPage === number ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => paginate(number)}
+                  className={`w-8 h-8 p-0 ${
+                    currentPage === number ? "bg-blue-600 text-white" : "text-gray-700"
+                  }`}
+                >
+                  {number}
+                </Button>
+              ))}
+            </div>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={nextPage}
+              disabled={currentPage === totalPages}
+              className="ml-2"
+            >
+              Next
+              <ChevronRight className="h-4 w-4 ml-1" />
+            </Button>
+          </div>
+        )}
+
         {/* Results count */}
-        <div className="text-sm text-gray-500 mb-4">
-          Showing {filteredProperties.length} of {properties.length} properties
+        <div className="text-sm text-gray-500 mt-6 text-center">
+          Showing {currentProperties.length > 0 ? indexOfFirstProperty + 1 : 0} to {Math.min(indexOfLastProperty, filteredProperties.length)} of {filteredProperties.length} properties
         </div>
       </div>
     </div>

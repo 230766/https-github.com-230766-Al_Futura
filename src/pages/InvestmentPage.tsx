@@ -57,6 +57,12 @@ const InvestmentPage = () => {
       return;
     }
 
+    // Check if the amount is in increments of 500
+    if (amount % 500 !== 0) {
+      toast.error('Investment amount must be in increments of 500 AED');
+      return;
+    }
+
     setIsPaymentModalOpen(true);
   };
 
@@ -182,13 +188,16 @@ const InvestmentPage = () => {
                   id="amount"
                   type="number"
                   min={property.min_investment}
-                  step="1000"
+                  step="500"
                   value={investmentAmount}
                   onChange={(e) => setInvestmentAmount(e.target.value)}
                   placeholder={`Minimum ${property.min_investment.toLocaleString()} AED`}
                   className="w-full"
                   required
                 />
+                <p className="text-sm text-gray-500 mt-1">
+                  Investment amounts must be in increments of 500 AED.
+                </p>
               </div>
 
               <Button

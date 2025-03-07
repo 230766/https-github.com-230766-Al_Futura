@@ -4,7 +4,6 @@ import Navbar from "./Navbar";
 import HeroSection from "./HeroSection";
 import PropertyGrid from "./PropertyGrid";
 import InvestmentCalculator from "./InvestmentCalculator";
-import Footer from "./Footer";
 import { fetchProperties } from "../lib/properties";
 
 const Home = () => {
@@ -246,29 +245,29 @@ const Home = () => {
               <h3 className="text-lg font-semibold mb-4">Company</h3>
               <ul className="space-y-2">
                 <li>
-                  <a href="#" className="text-gray-400 hover:text-white">
+                  <Link to="/about" className="text-gray-400 hover:text-white">
                     About Us
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="text-gray-400 hover:text-white">
+                  <Link to="/how-it-works" className="text-gray-400 hover:text-white">
                     How It Works
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="text-gray-400 hover:text-white">
+                  <Link to="/team" className="text-gray-400 hover:text-white">
                     Team
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="text-gray-400 hover:text-white">
+                  <Link to="/careers" className="text-gray-400 hover:text-white">
                     Careers
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="text-gray-400 hover:text-white">
+                  <Link to="/press" className="text-gray-400 hover:text-white">
                     Press
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </div>
@@ -276,29 +275,29 @@ const Home = () => {
               <h3 className="text-lg font-semibold mb-4">Resources</h3>
               <ul className="space-y-2">
                 <li>
-                  <a href="#" className="text-gray-400 hover:text-white">
+                  <Link to="/blog" className="text-gray-400 hover:text-white">
                     Blog
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="text-gray-400 hover:text-white">
+                  <Link to="/guides" className="text-gray-400 hover:text-white">
                     Guides
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="text-gray-400 hover:text-white">
+                  <Link to="/faq" className="text-gray-400 hover:text-white">
                     FAQ
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="text-gray-400 hover:text-white">
+                  <Link to="/help" className="text-gray-400 hover:text-white">
                     Help Center
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="text-gray-400 hover:text-white">
+                  <Link to="/contact" className="text-gray-400 hover:text-white">
                     Contact
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </div>
@@ -306,29 +305,29 @@ const Home = () => {
               <h3 className="text-lg font-semibold mb-4">Legal</h3>
               <ul className="space-y-2">
                 <li>
-                  <a href="#" className="text-gray-400 hover:text-white">
+                  <Link to="/terms" className="text-gray-400 hover:text-white">
                     Terms of Service
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="text-gray-400 hover:text-white">
+                  <Link to="/privacy" className="text-gray-400 hover:text-white">
                     Privacy Policy
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="text-gray-400 hover:text-white">
+                  <Link to="/cookie-policy" className="text-gray-400 hover:text-white">
                     Cookie Policy
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="text-gray-400 hover:text-white">
+                  <Link to="/investor-protection" className="text-gray-400 hover:text-white">
                     Investor Protection
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="text-gray-400 hover:text-white">
+                  <Link to="/risk-disclosure" className="text-gray-400 hover:text-white">
                     Risk Disclosure
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </div>
@@ -340,15 +339,15 @@ const Home = () => {
               © {new Date().getFullYear()} Al Futura. All rights reserved.
             </p>
             <div className="flex space-x-6">
-              <a href="#" className="text-gray-500 hover:text-gray-400 text-sm">
+              <Link to="/privacy" className="text-gray-500 hover:text-gray-400 text-sm">
                 Privacy
-              </a>
-              <a href="#" className="text-gray-500 hover:text-gray-400 text-sm">
+              </Link>
+              <Link to="/terms" className="text-gray-500 hover:text-gray-400 text-sm">
                 Terms
-              </a>
-              <a href="#" className="text-gray-500 hover:text-gray-400 text-sm">
+              </Link>
+              <Link to="/sitemap" className="text-gray-500 hover:text-gray-400 text-sm">
                 Sitemap
-              </a>
+              </Link>
             </div>
           </div>
         </div>

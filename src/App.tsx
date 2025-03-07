@@ -1,5 +1,5 @@
 import { Suspense, lazy } from "react";
-import { useRoutes, Routes, Route } from "react-router-dom";
+import { useRoutes, Routes, Route, useLocation } from "react-router-dom";
 import Home from "./components/home";
 import routes from "tempo-routes";
 import { AuthProvider } from "./contexts/AuthContext";
@@ -18,6 +18,7 @@ const Contact = lazy(() => import("./pages/Contact"));
 const Properties = lazy(() => import("./pages/Properties"));
 const PropertiesByType = lazy(() => import("./pages/PropertiesByType"));
 const InvestmentPage = lazy(() => import("./pages/InvestmentPage"));
+const Sitemap = lazy(() => import("./pages/Sitemap"));
 
 // Company Pages
 const TeamPage = lazy(() => import('./pages/company/Team'));
@@ -38,6 +39,9 @@ const InvestorProtectionPage = lazy(() => import('./pages/legal/InvestorProtecti
 const RiskDisclosurePage = lazy(() => import('./pages/legal/RiskDisclosure'));
 
 function App() {
+  const location = useLocation();
+  const isHomePage = location.pathname === '/';
+
   return (
     <AuthProvider>
       <Suspense
@@ -79,6 +83,9 @@ function App() {
               <Route path="/investor-protection" element={<InvestorProtectionPage />} />
               <Route path="/risk-disclosure" element={<RiskDisclosurePage />} />
 
+              {/* Sitemap */}
+              <Route path="/sitemap" element={<Sitemap />} />
+
               {/* Admin Routes */}
               <Route path="/admin" element={<AdminLayout />}>
                 <Route index element={<Dashboard />} />
@@ -90,7 +97,7 @@ function App() {
             </Routes>
             {import.meta.env.VITE_TEMPO === "true" && useRoutes(routes)}
           </div>
-          <Footer />
+          {!isHomePage && <Footer />}
         </div>
         <Toaster position="top-right" />
       </Suspense>

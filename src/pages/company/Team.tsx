@@ -37,7 +37,7 @@ const TeamPage = () => {
       <HeroSection2
         title="Our Team"
         description="Meet the experts behind Al Futura's success"
-        imageUrl="/dubai/dubai-marina-night.jpg"
+        imageUrl="/dubai/dubai-skyline-panorama.jpg"
       />
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mt-12">

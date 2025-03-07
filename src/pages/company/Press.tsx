@@ -44,9 +44,9 @@ const PressPage = () => {
     <>
       <Navbar transparent={true} />
       <HeroSection2
-        title="Press & Media"
-        description="Latest news and updates from Al Futura"
-        imageUrl="/dubai/dubai-skyline.jpg"
+        title="Press"
+        description="Latest news and media coverage about Al Futura"
+        imageUrl="/dubai/dubai-burj-khalifa-night.jpg"
       />
       <div className="container mx-auto px-4 py-12">
         <div className="mt-12">

@@ -53,7 +53,7 @@ const TermsPage = () => {
       <HeroSection2
         title="Terms of Service"
         description="Please read these terms carefully before using our platform"
-        imageUrl="/dubai/dubai-burj-khalifa.jpg"
+        imageUrl="/dubai/dubai-beach-luxury.jpg"
       />
       <div className="container mx-auto px-4 py-12">
         <div className="mt-12 max-w-4xl mx-auto">
