@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -9,9 +9,18 @@ import { Button } from './ui/button';
 import { 
   CreditCard, 
   Wallet, 
-  Bitcoin, 
+  Bitcoin,
   DollarSign,
+  Building,
+  ChevronRight,
 } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
 
 interface PaymentOption {
   id: string;
@@ -20,6 +29,7 @@ interface PaymentOption {
   description: string;
   processingTime: string;
   fee: string;
+  cryptoOptions?: { value: string; label: string }[];
 }
 
 interface PaymentOptionsModalProps {
@@ -47,20 +57,28 @@ const paymentOptions: PaymentOption[] = [
     fee: '3.9% + AED 1.50',
   },
   {
-    id: 'crypto-eth',
-    name: 'Ethereum (ETH)',
+    id: 'crypto',
+    name: 'Cryptocurrency',
     icon: <Wallet className="w-6 h-6" />,
-    description: 'Pay with ETH from your crypto wallet',
-    processingTime: '~5 minutes',
+    description: 'Pay with your preferred cryptocurrency',
+    processingTime: 'Varies by currency',
     fee: 'Network fee only',
+    cryptoOptions: [
+      { value: 'btc', label: 'Bitcoin (BTC)' },
+      { value: 'eth', label: 'Ethereum (ETH)' },
+      { value: 'sol', label: 'Solana (SOL)' },
+      { value: 'xrp', label: 'Ripple (XRP)' },
+      { value: 'xlm', label: 'Stellar (XLM)' },
+      { value: 'ada', label: 'Cardano (ADA)' },
+    ],
   },
   {
-    id: 'crypto-btc',
-    name: 'Bitcoin (BTC)',
-    icon: <Bitcoin className="w-6 h-6" />,
-    description: 'Pay with BTC from your crypto wallet',
-    processingTime: '~30 minutes',
-    fee: 'Network fee only',
+    id: 'bank',
+    name: 'Bank Transfer',
+    icon: <Building className="w-6 h-6" />,
+    description: 'Pay directly from your bank account',
+    processingTime: '1-3 business days',
+    fee: 'No fee',
   },
 ];
 
@@ -70,6 +88,18 @@ export const PaymentOptionsModal = ({
   amount,
   onSelectPayment 
 }: PaymentOptionsModalProps) => {
+  const [selectedCrypto, setSelectedCrypto] = useState<string>('');
+
+  const handlePaymentSelect = (option: PaymentOption) => {
+    if (option.id === 'crypto') {
+      if (selectedCrypto) {
+        onSelectPayment(`crypto-${selectedCrypto}`);
+      }
+    } else {
+      onSelectPayment(option.id);
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl">
@@ -93,7 +123,7 @@ export const PaymentOptionsModal = ({
                 key={option.id}
                 variant="outline"
                 className="flex items-start p-4 h-auto hover:border-blue-600 hover:bg-blue-50 transition-colors"
-                onClick={() => onSelectPayment(option.id)}
+                onClick={() => handlePaymentSelect(option)}
               >
                 <div className="flex items-center gap-4 w-full">
                   <div className="flex-shrink-0 w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
@@ -110,7 +140,27 @@ export const PaymentOptionsModal = ({
                         Fee: {option.fee}
                       </span>
                     </div>
+                    {option.cryptoOptions && (
+                      <div className="mt-2">
+                        <Select
+                          value={selectedCrypto}
+                          onValueChange={setSelectedCrypto}
+                        >
+                          <SelectTrigger className="w-[200px]">
+                            <SelectValue placeholder="Select cryptocurrency" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {option.cryptoOptions.map((crypto) => (
+                              <SelectItem key={crypto.value} value={crypto.value}>
+                                {crypto.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
                   </div>
+                  <ChevronRight className="w-5 h-5 text-gray-400" />
                 </div>
               </Button>
             ))}

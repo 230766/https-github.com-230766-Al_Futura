@@ -192,6 +192,9 @@ const PropertyGrid = ({
   const [currentPage, setCurrentPage] = useState(1);
   const propertiesPerPage = 6;
 
+  // Calculate maximum ROI from properties
+  const maxROI = Math.ceil(Math.max(...properties.map(p => p.expectedROI)));
+
   // Filter options
   const [filterOptions, setFilterOptions] = useState<FilterOptions>({
     propertyType: "all",
@@ -334,7 +337,7 @@ const PropertyGrid = ({
                 <div className="px-2">
                   <Slider
                     defaultValue={[filterOptions.expectedROI]}
-                    max={10}
+                    max={maxROI}
                     step={0.5}
                     onValueChange={(value) =>
                       handleFilterChange({ expectedROI: value[0] })

@@ -15,6 +15,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
+import logo from "../../assets/logo.png";
 
 const AdminNavbar = () => {
   const navigate = useNavigate();
@@ -33,8 +34,8 @@ const AdminNavbar = () => {
     <nav className="w-full h-16 bg-white shadow-sm fixed top-0 left-0 z-50">
       <div className="container mx-auto px-4 h-full flex items-center justify-between">
         {/* Logo */}
-        <Link to="/admin" className="flex items-center">
-          <div className="text-xl font-bold text-blue-600">Al Futura Admin</div>
+        <Link to="/" className="flex items-center">
+          <img src={logo} alt="Al Futura Logo" className="h-12 w-auto" />
         </Link>
 
         {/* Desktop Navigation */}

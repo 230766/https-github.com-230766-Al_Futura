@@ -20,9 +20,9 @@ const InvestmentPage = () => {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = React.useState(false);
 
   React.useEffect(() => {
-    // Redirect to sign in if not authenticated
+    // Redirect to login if not authenticated
     if (!user) {
-      navigate('/signin', { state: { returnTo: `/invest/${id}` } });
+      navigate('/login', { state: { returnTo: `/invest/${id}` } });
       return;
     }
 
@@ -90,24 +90,40 @@ const InvestmentPage = () => {
       // Redirect based on payment method
       switch (method) {
         case 'card':
-          navigate(`/payment/stripe/${property.id}`, { 
+          navigate(`/payment/card`, { 
             state: { amount, investmentId: property.id } 
           });
           break;
         case 'paypal':
-          navigate(`/payment/paypal/${property.id}`, { 
-            state: { amount, investmentId: property.id } 
-          });
+          // Redirect to PayPal.me link
+          window.location.href = `https://paypal.me/HoracioMM/${amount}`;
           break;
-        case 'crypto-eth':
-          navigate(`/payment/crypto/${property.id}`, { 
-            state: { amount, investmentId: property.id, currency: 'ETH' } 
+        case 'bank':
+          navigate(`/payment/bank-transfer`, {
+            state: { amount, investmentId: property.id }
           });
           break;
         case 'crypto-btc':
-          navigate(`/payment/crypto/${property.id}`, { 
-            state: { amount, investmentId: property.id, currency: 'BTC' } 
-          });
+        case 'crypto-eth':
+        case 'crypto-sol':
+        case 'crypto-xrp':
+        case 'crypto-xlm':
+        case 'crypto-ada':
+          // Check if MetaMask is installed
+          if (typeof window.ethereum !== 'undefined') {
+            try {
+              // Request account access
+              await window.ethereum.request({ method: 'eth_requestAccounts' });
+              // You would typically now handle the crypto payment through MetaMask
+              // For now, we'll just show a success message
+              toast.success('Connected to MetaMask! Payment processing...');
+            } catch (error) {
+              toast.error('Failed to connect to MetaMask');
+            }
+          } else {
+            window.open('https://metamask.io/download/', '_blank');
+            toast.error('Please install MetaMask to make cryptocurrency payments');
+          }
           break;
         default:
           toast.error('Invalid payment method selected');

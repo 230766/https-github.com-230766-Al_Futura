@@ -1,7 +1,9 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { PageHeader } from '../../components/PageHeader';
 import { Shield, Lock, FileCheck, Scale } from 'lucide-react';
 import HeroSection2 from '../../components/HeroSection2';
+import { useAuth } from '../../contexts/AuthContext';
 
 const protectionMeasures = [
   {
@@ -27,6 +29,17 @@ const protectionMeasures = [
 ];
 
 const InvestorProtectionPage = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const handleProtectedAction = () => {
+    if (!user) {
+      navigate('/login', { state: { returnTo: '/investor-protection' } });
+      return;
+    }
+    // Handle the action for authenticated users
+  };
+
   return (
     <div className="min-h-screen bg-white">
       <HeroSection2
@@ -134,10 +147,16 @@ const InvestorProtectionPage = () => {
               your investments and interests.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <button className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors duration-200">
+              <button 
+                onClick={handleProtectedAction}
+                className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors duration-200"
+              >
                 Contact Investor Relations
               </button>
-              <button className="border border-blue-600 text-blue-600 px-6 py-3 rounded-lg font-medium hover:bg-blue-50 transition-colors duration-200">
+              <button 
+                onClick={handleProtectedAction}
+                className="border border-blue-600 text-blue-600 px-6 py-3 rounded-lg font-medium hover:bg-blue-50 transition-colors duration-200"
+              >
                 Download Protection Guide
               </button>
             </div>

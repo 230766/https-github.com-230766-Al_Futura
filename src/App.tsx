@@ -20,6 +20,10 @@ const PropertiesByType = lazy(() => import("./pages/PropertiesByType"));
 const InvestmentPage = lazy(() => import("./pages/InvestmentPage"));
 const Sitemap = lazy(() => import("./pages/Sitemap"));
 
+// Payment Pages
+const CreditCardPayment = lazy(() => import("./pages/payments/CreditCardPayment"));
+const BankTransfer = lazy(() => import("./pages/payments/BankTransfer"));
+
 // Company Pages
 const TeamPage = lazy(() => import('./pages/company/Team'));
 const CareersPage = lazy(() => import('./pages/company/Careers'));
@@ -64,6 +68,10 @@ function App() {
               <Route path="/properties" element={<Properties />} />
               <Route path="/properties/:type" element={<PropertiesByType />} />
               <Route path="/invest/:id" element={<InvestmentPage />} />
+
+              {/* Payment Routes */}
+              <Route path="/payment/card" element={<CreditCardPayment />} />
+              <Route path="/payment/bank-transfer" element={<BankTransfer />} />
 
               {/* Company Routes */}
               <Route path="/team" element={<TeamPage />} />

@@ -109,7 +109,7 @@ const PropertyDetail = ({ id, property: propProperty, hideNavigation = false }: 
 
   const handleInvestClick = () => {
     if (!user) {
-      navigate('/signin', { state: { returnTo: `/properties/${propertyId}` } });
+      navigate('/login', { state: { returnTo: `/properties/${propertyId}` } });
       return;
     }
     // If user is logged in, proceed with investment flow
