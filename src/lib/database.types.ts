@@ -172,11 +172,14 @@ export interface Database {
   }
 }
 
-export type Tables<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Row']
-export type Enums<T extends keyof Database['public']['Enums']> = Database['public']['Enums'][T]
+// Ensure the Tables type is correctly defined to access Row, Insert, and Update properties
+export type Tables<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T];
 
-// Helpful type aliases
-export type Tables = Database['public']['Tables']
-export type Property = Tables['properties']['Row']
-export type NewProperty = Tables['properties']['Insert']
-export type PropertyUpdate = Tables['properties']['Update'] 
+// Correctly define Property, NewProperty, and PropertyUpdate types
+export type Property = Tables<'properties'>['Row'];
+export type NewProperty = Tables<'properties'>['Insert'];
+export type PropertyUpdate = Tables<'properties'>['Update'];
+
+// Ensure blockchain, marketplace, and marketplace_url are part of the Property type
+// These should be part of the Property type in the database definition
+// No need for a separate interface here 

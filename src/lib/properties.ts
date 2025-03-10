@@ -81,6 +81,23 @@ export const updateProperty = async (property: PropertyFormData) => {
 
   console.log('Updating property in database:', property);
 
+  // Ensure investorCount is included in the investment_details
+  const investmentDetails = {
+    term: property.investmentDetails?.term || "5 years",
+    payoutFrequency: property.investmentDetails?.payoutFrequency || "Quarterly",
+    exitStrategy: property.investmentDetails?.exitStrategy || "Property sale or refinancing",
+    investorCount: property.investmentDetails?.investorCount || 0
+  };
+
+  // Add NFT-specific fields to investment_details if it's an NFT property
+  if (property.propertyType === "NFT-properties" && property.investmentDetails) {
+    Object.assign(investmentDetails, {
+      blockchain: property.investmentDetails.blockchain || "Ethereum",
+      marketplace: property.investmentDetails.marketplace || "AlFutura",
+      marketplace_url: property.investmentDetails.marketplace_url || ""
+    });
+  }
+
   const updateData = {
     title: property.title,
     description: property.description,
@@ -93,19 +110,7 @@ export const updateProperty = async (property: PropertyFormData) => {
     funding_goal: property.fundingGoal,
     property_type: property.propertyType,
     features: property.features || [],
-    investment_details: {
-      term: property.investmentDetails?.term || "5 years",
-      payoutFrequency: property.investmentDetails?.payoutFrequency || "Quarterly",
-      exitStrategy: property.investmentDetails?.exitStrategy || "Property sale or refinancing",
-      investorCount: property.investmentDetails?.investorCount || 0,
-      ...(property.propertyType === "NFT-properties" && property.investmentDetails
-        ? {
-            blockchain: property.investmentDetails.blockchain,
-            marketplace: property.investmentDetails.marketplace,
-            marketplace_url: property.investmentDetails.marketplace_url
-          }
-        : {})
-    },
+    investment_details: investmentDetails,
     updated_at: new Date()
   };
 

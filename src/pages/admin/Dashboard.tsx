@@ -219,36 +219,48 @@ const Dashboard = () => {
         throw error;
       }
 
-      const formattedProperties = (properties as Property[]).map(property => ({
-        id: property.id,
-        title: property.title,
-        description: property.description,
-        location: property.location,
-        imageUrl: property.image_url,
-        additionalImages: property.additional_images || [],
-        minInvestment: property.min_investment,
-        expectedROI: property.expected_roi,
-        fundingProgress: property.funding_progress,
-        fundingGoal: property.funding_goal,
-        propertyType: property.property_type,
-        features: property.features || [],
-        investmentDetails: {
-          ...(property.investment_details || {
-            term: '',
-            payoutFrequency: '',
-            exitStrategy: '',
-            investorCount: 0
-          }),
-          ...(property.property_type === "NFT-properties" ? {
-            blockchain: property.blockchain || "Ethereum",
-            marketplace: property.marketplace || "AlFutura",
-            marketplace_url: property.marketplace_url || ""
-          } : {})
-        },
-        is_featured: Boolean(property.is_featured)
-      }));
+      console.log('Raw properties from database:', properties);
 
-      console.log('Loaded and formatted properties:', formattedProperties);
+      const formattedProperties = (properties as Property[]).map(property => {
+        // Ensure investment_details is properly handled
+        const investmentDetails = property.investment_details || {
+          term: '5 years',
+          payoutFrequency: 'Quarterly',
+          exitStrategy: 'Property sale or refinancing',
+          investorCount: 0
+        };
+
+        console.log(`Property ${property.id} investment_details:`, property.investment_details);
+        
+        return {
+          id: property.id,
+          title: property.title,
+          description: property.description,
+          location: property.location,
+          imageUrl: property.image_url,
+          additionalImages: property.additional_images || [],
+          minInvestment: property.min_investment,
+          expectedROI: property.expected_roi,
+          fundingProgress: property.funding_progress,
+          fundingGoal: property.funding_goal,
+          propertyType: property.property_type,
+          features: property.features || [],
+          investmentDetails: {
+            term: investmentDetails.term,
+            payoutFrequency: investmentDetails.payoutFrequency,
+            exitStrategy: investmentDetails.exitStrategy,
+            investorCount: investmentDetails.investorCount,
+            ...(property.property_type === "NFT-properties" ? {
+              blockchain: property.blockchain || investmentDetails.blockchain || "Ethereum",
+              marketplace: property.marketplace || investmentDetails.marketplace || "AlFutura",
+              marketplace_url: property.marketplace_url || investmentDetails.marketplace_url || ""
+            } : {})
+          },
+          is_featured: Boolean(property.is_featured)
+        };
+      });
+
+      console.log('Formatted properties:', formattedProperties);
       setProperties(formattedProperties);
     } catch (error) {
       console.error('Error loading properties:', error);
@@ -300,6 +312,11 @@ const Dashboard = () => {
     try {
       setIsFormLoading(true);
       console.log('Original update data:', updatedProperty);
+      console.log('Original investment details:', {
+        investment_details: updatedProperty.investment_details,
+        investmentDetails: updatedProperty.investmentDetails,
+        investorCount: updatedProperty.investment_details?.investorCount || updatedProperty.investmentDetails?.investorCount
+      });
 
       // Transform the data to match the database structure
       const propertyData = {
@@ -320,16 +337,17 @@ const Dashboard = () => {
           payoutFrequency: updatedProperty.investment_details?.payoutFrequency || updatedProperty.investmentDetails?.payoutFrequency || "Quarterly",
           exitStrategy: updatedProperty.investment_details?.exitStrategy || updatedProperty.investmentDetails?.exitStrategy || "Property sale or refinancing",
           investorCount: updatedProperty.investment_details?.investorCount || updatedProperty.investmentDetails?.investorCount || 0,
-          ...(updatedProperty.property_type === "NFT-properties" ? {
-            blockchain: updatedProperty.blockchain || updatedProperty.investment_details?.blockchain || "Ethereum",
-            marketplace: updatedProperty.marketplace || updatedProperty.investment_details?.marketplace || "AlFutura",
-            marketplace_url: updatedProperty.marketplace_url || updatedProperty.investment_details?.marketplace_url || ""
+          ...(updatedProperty.property_type === "NFT-properties" || updatedProperty.propertyType === "NFT-properties" ? {
+            blockchain: updatedProperty.blockchain || updatedProperty.investment_details?.blockchain || updatedProperty.investmentDetails?.blockchain || "Ethereum",
+            marketplace: updatedProperty.marketplace || updatedProperty.investment_details?.marketplace || updatedProperty.investmentDetails?.marketplace || "AlFutura",
+            marketplace_url: updatedProperty.marketplace_url || updatedProperty.investment_details?.marketplace_url || updatedProperty.investmentDetails?.marketplace_url || ""
           } : {})
         },
         is_featured: updatedProperty.is_featured
       };
 
       console.log('Transformed property data:', propertyData);
+      console.log('Transformed investment details:', propertyData.investmentDetails);
 
       const result = await updateProperty(propertyData);
       console.log('Update result:', result);

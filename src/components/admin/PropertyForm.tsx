@@ -102,11 +102,22 @@ const PropertyForm = ({
   onCancel,
   isLoading = false,
 }: PropertyFormProps) => {
+  console.log('PropertyForm initialData:', initialData);
+  console.log('PropertyForm initialData.investment_details:', initialData?.investment_details);
+  console.log('PropertyForm initialData.investmentDetails:', initialData?.investmentDetails);
+
   const [formData, setFormData] = useState<NewProperty>(() => {
     if (initialData) {
       // Ensure property type is correctly initialized from initialData
       const propertyType = initialData.property_type || initialData.propertyType || "Residential";
       console.log('Initializing form with property type:', propertyType);
+      
+      // Log investment details
+      console.log('Investment details from initialData:', {
+        investment_details: initialData.investment_details,
+        investmentDetails: initialData.investmentDetails,
+        investorCount: initialData.investment_details?.investorCount || initialData.investmentDetails?.investorCount || 0
+      });
       
       // Create base data
       const baseData = {
@@ -125,16 +136,19 @@ const PropertyForm = ({
         features: initialData.features || [],
         investment_term: initialData.investment_term || 5,
         investment_details: {
-          term: initialData.investment_details?.term || "5 years",
-          payoutFrequency: initialData.investment_details?.payoutFrequency || "Quarterly",
-          exitStrategy: initialData.investment_details?.exitStrategy || "Property sale or refinancing",
-          investorCount: initialData.investment_details?.investorCount || 0
+          term: initialData.investment_details?.term || initialData.investmentDetails?.term || "5 years",
+          payoutFrequency: initialData.investment_details?.payoutFrequency || initialData.investmentDetails?.payoutFrequency || "Quarterly",
+          exitStrategy: initialData.investment_details?.exitStrategy || initialData.investmentDetails?.exitStrategy || "Property sale or refinancing",
+          investorCount: initialData.investment_details?.investorCount || initialData.investmentDetails?.investorCount || 0
         }
       };
 
+      // Log base data
+      console.log('Base data with investment details:', baseData.investment_details);
+
       // If it's an NFT property, add NFT-specific fields
       if (propertyType === "NFT-properties") {
-        return {
+        const nftData = {
           ...baseData,
           blockchain: initialData.blockchain || "Ethereum",
           marketplace: initialData.marketplace || "AlFutura",
@@ -148,12 +162,18 @@ const PropertyForm = ({
             marketplace: initialData.marketplace || "AlFutura"
           }
         };
+        
+        console.log('NFT data with investment details:', nftData.investment_details);
+        return nftData;
       }
 
       return baseData;
     }
     return defaultProperty;
   });
+
+  console.log('FormData after initialization:', formData);
+  console.log('FormData investment_details after initialization:', formData.investment_details);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [singleImageUrl, setSingleImageUrl] = useState("");
@@ -452,7 +472,7 @@ const PropertyForm = ({
           term: formData.investment_details.term,
           payoutFrequency: formData.investment_details.payoutFrequency,
           exitStrategy: formData.investment_details.exitStrategy,
-          investorCount: formData.investment_details.investorCount
+          investorCount: formData.investment_details.investorCount // Ensure this is included
         }
       };
 
