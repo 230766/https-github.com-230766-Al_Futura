@@ -18,6 +18,7 @@ import {
   CardTitle,
 } from "../ui/card";
 import { MapPin, Home, DollarSign, Percent, X } from "lucide-react";
+import type { NewProperty, PropertyUpdate } from "../../lib/database.types";
 
 // Add a simple Json type definition
 type Json = string | number | boolean | null | { [key: string]: Json } | Json[];
@@ -42,33 +43,45 @@ export interface PropertyFormData {
     investorCount: number;
   };
   is_featured?: boolean;
+  nftDetails?: {
+    totalNFTs: number;
+    minPurchaseNFT: number;
+    blockchain: string;
+    marketplace: string;
+    marketplace_url?: string;
+  };
 }
 
 interface PropertyFormProps {
-  initialData?: PropertyFormData;
-  onSubmit: (data: PropertyFormData) => void;
+  initialData?: NewProperty;
+  onSubmit: (data: NewProperty) => void;
   onCancel: () => void;
   isLoading?: boolean;
 }
 
-const defaultProperty: PropertyFormData = {
+const defaultProperty: NewProperty = {
   title: "",
   description: "",
   location: "",
-  imageUrl: "",
-  additionalImages: [],
-  minInvestment: 500,
-  expectedROI: 7.5,
-  fundingProgress: 0,
-  fundingGoal: 100000,
-  propertyType: "Residential",
+  image_url: "",
+  additional_images: [],
+  min_investment: 500,
+  expected_roi: 7.5,
+  funding_progress: 0,
+  funding_goal: 100000,
+  property_type: "Residential",
   features: [],
-  investmentDetails: {
+  investment_details: {
     term: "5 years",
     payoutFrequency: "Quarterly",
     exitStrategy: "Property sale or refinancing",
     investorCount: 0,
   },
+  investment_term: 5,
+  blockchain: "Ethereum",
+  marketplace: "AlFutura",
+  marketplace_url: "",
+  min_purchase_nft: 1
 };
 
 const propertyTypes = [
@@ -77,7 +90,11 @@ const propertyTypes = [
   "Vacation",
   "Retail",
   "Industrial",
-];
+  "NFT-properties"
+] as const;
+
+const blockchainOptions = ["Solana", "Ethereum", "VeChain", "Polygon"] as const;
+const marketplaceOptions = ["OpenSea", "Rarible", "AlFutura"] as const;
 
 const PropertyForm = ({
   initialData,
@@ -85,15 +102,107 @@ const PropertyForm = ({
   onCancel,
   isLoading = false,
 }: PropertyFormProps) => {
-  const [formData, setFormData] = useState<PropertyFormData>(
-    initialData || defaultProperty,
-  );
+  const [formData, setFormData] = useState<NewProperty>(() => {
+    if (initialData) {
+      // Ensure property type is correctly initialized from initialData
+      const propertyType = initialData.property_type || initialData.propertyType || "Residential";
+      console.log('Initializing form with property type:', propertyType);
+      
+      // Create base data
+      const baseData = {
+        ...defaultProperty,
+        id: initialData.id,
+        title: initialData.title || "",
+        description: initialData.description || "",
+        location: initialData.location || "",
+        image_url: initialData.image_url || initialData.imageUrl || "",
+        additional_images: initialData.additional_images || initialData.additionalImages || [],
+        min_investment: initialData.min_investment || initialData.minInvestment || 500,
+        expected_roi: initialData.expected_roi || initialData.expectedROI || 7.5,
+        funding_progress: initialData.funding_progress || initialData.fundingProgress || 0,
+        funding_goal: initialData.funding_goal || initialData.fundingGoal || 100000,
+        property_type: propertyType,
+        features: initialData.features || [],
+        investment_term: initialData.investment_term || 5,
+        investment_details: {
+          term: initialData.investment_details?.term || "5 years",
+          payoutFrequency: initialData.investment_details?.payoutFrequency || "Quarterly",
+          exitStrategy: initialData.investment_details?.exitStrategy || "Property sale or refinancing",
+          investorCount: initialData.investment_details?.investorCount || 0
+        }
+      };
+
+      // If it's an NFT property, add NFT-specific fields
+      if (propertyType === "NFT-properties") {
+        return {
+          ...baseData,
+          blockchain: initialData.blockchain || "Ethereum",
+          marketplace: initialData.marketplace || "AlFutura",
+          marketplace_url: initialData.marketplace_url || "",
+          min_purchase_nft: initialData.min_purchase_nft || 1,
+          total_nfts: initialData.total_nfts || Math.floor((initialData.funding_goal || 100000) / 500),
+          investment_details: {
+            ...baseData.investment_details,
+            marketplace_url: initialData.marketplace_url || "",
+            blockchain: initialData.blockchain || "Ethereum",
+            marketplace: initialData.marketplace || "AlFutura"
+          }
+        };
+      }
+
+      return baseData;
+    }
+    return defaultProperty;
+  });
+
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [singleImageUrl, setSingleImageUrl] = useState("");
 
   useEffect(() => {
     if (initialData) {
-      setFormData(initialData);
+      const propertyType = initialData.property_type || initialData.propertyType || "Residential";
+      
+      const baseData = {
+        ...defaultProperty,
+        id: initialData.id,
+        title: initialData.title || "",
+        description: initialData.description || "",
+        location: initialData.location || "",
+        image_url: initialData.image_url || initialData.imageUrl || "",
+        additional_images: initialData.additional_images || initialData.additionalImages || [],
+        min_investment: initialData.min_investment || initialData.minInvestment || 500,
+        expected_roi: initialData.expected_roi || initialData.expectedROI || 7.5,
+        funding_progress: initialData.funding_progress || initialData.fundingProgress || 0,
+        funding_goal: initialData.funding_goal || initialData.fundingGoal || 100000,
+        property_type: propertyType,
+        features: initialData.features || [],
+        investment_term: initialData.investment_term || 5,
+        investment_details: {
+          term: initialData.investment_details?.term || "5 years",
+          payoutFrequency: initialData.investment_details?.payoutFrequency || "Quarterly",
+          exitStrategy: initialData.investment_details?.exitStrategy || "Property sale or refinancing",
+          investorCount: initialData.investment_details?.investorCount || 0
+        }
+      };
+
+      if (propertyType === "NFT-properties") {
+        setFormData({
+          ...baseData,
+          blockchain: initialData.blockchain || "Ethereum",
+          marketplace: initialData.marketplace || "AlFutura",
+          marketplace_url: initialData.marketplace_url || "",
+          min_purchase_nft: initialData.min_purchase_nft || 1,
+          total_nfts: initialData.total_nfts || Math.floor((initialData.funding_goal || 100000) / 500),
+          investment_details: {
+            ...baseData.investment_details,
+            marketplace_url: initialData.marketplace_url || "",
+            blockchain: initialData.blockchain || "Ethereum",
+            marketplace: initialData.marketplace || "AlFutura"
+          }
+        });
+      } else {
+        setFormData(baseData);
+      }
     }
   }, [initialData]);
 
@@ -101,16 +210,33 @@ const PropertyForm = ({
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]:
-        name === "minInvestment" ||
-        name === "expectedROI" ||
-        name === "fundingProgress" ||
-        name === "fundingGoal"
-          ? parseFloat(value) || 0
-          : value,
-    }));
+    setFormData((prev) => {
+      const updatedData = { ...prev };
+      
+      // Handle numeric fields
+      if (name === "min_investment" || name === "expected_roi" || 
+          name === "funding_progress" || name === "funding_goal") {
+        updatedData[name] = parseFloat(value) || 0;
+      }
+      // Handle additional images
+      else if (name === "additional_images") {
+        updatedData.additional_images = value.split("\n").filter((url) => url.trim() !== "");
+      }
+      // Handle marketplace URL
+      else if (name === "marketplace_url") {
+        updatedData.marketplace_url = value;
+        updatedData.investment_details = {
+          ...updatedData.investment_details,
+          marketplace_url: value
+        };
+      }
+      // Handle all other fields
+      else {
+        updatedData[name] = value;
+      }
+
+      return updatedData;
+    });
 
     // Clear error when field is edited
     if (errors[name]) {
@@ -119,17 +245,58 @@ const PropertyForm = ({
   };
 
   const handleSelectChange = (value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      propertyType: value,
-    }));
+    console.log('Changing property type to:', value);
+    
+    setFormData((prev) => {
+      // Create new base data without NFT-specific fields
+      const baseData = {
+        ...prev,
+        property_type: value // Ensure property type is set
+      };
+
+      // If switching to NFT-properties, add NFT-specific fields
+      if (value === "NFT-properties") {
+        return {
+          ...baseData,
+          blockchain: "Ethereum",
+          marketplace: "AlFutura",
+          marketplace_url: "",
+          min_purchase_nft: 1,
+          total_nfts: Math.floor(prev.funding_goal / 500),
+          investment_details: {
+            ...baseData.investment_details,
+            marketplace_url: "",
+            blockchain: "Ethereum",
+            marketplace: "AlFutura"
+          }
+        };
+      }
+
+      // For non-NFT properties, remove NFT-specific fields
+      const {
+        blockchain,
+        marketplace,
+        marketplace_url,
+        min_purchase_nft,
+        total_nfts,
+        ...rest
+      } = baseData;
+
+      // Remove NFT fields from investment_details
+      const { marketplace_url: _, blockchain: __, marketplace: ___, ...cleanInvestmentDetails } = baseData.investment_details;
+
+      return {
+        ...rest,
+        investment_details: cleanInvestmentDetails
+      };
+    });
   };
 
   const handleAdditionalImagesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const urls = e.target.value.split("\n").filter((url) => url.trim() !== "");
     setFormData((prev) => ({
       ...prev,
-      additionalImages: urls,
+      additional_images: urls,
     }));
 
     // Automatically adjust textarea height
@@ -158,7 +325,7 @@ const PropertyForm = ({
       const urls = newValue.split("\n").filter((url) => url.trim() !== "");
       setFormData((prev) => ({
         ...prev,
-        additionalImages: urls,
+        additional_images: urls,
       }));
       
       // Set cursor position after the inserted newline
@@ -204,7 +371,7 @@ const PropertyForm = ({
       const urls = newValue.split("\n").filter((url) => url.trim() !== "");
       setFormData((prev) => ({
         ...prev,
-        additionalImages: urls,
+        additional_images: urls,
       }));
       
       // Update textarea value
@@ -233,28 +400,28 @@ const PropertyForm = ({
       newErrors.location = "Location is required";
     }
 
-    if (!formData.imageUrl.trim()) {
-      newErrors.imageUrl = "Image URL is required";
+    if (!formData.image_url.trim()) {
+      newErrors.image_url = "Image URL is required";
     }
 
-    if (formData.minInvestment <= 0) {
-      newErrors.minInvestment = "Minimum investment must be greater than 0";
+    if (formData.min_investment <= 0) {
+      newErrors.min_investment = "Minimum investment must be greater than 0";
     }
 
-    if (formData.expectedROI <= 0) {
-      newErrors.expectedROI = "Expected ROI must be greater than 0";
+    if (formData.expected_roi <= 0) {
+      newErrors.expected_roi = "Expected ROI must be greater than 0";
     }
 
-    if (formData.fundingGoal <= 0) {
-      newErrors.fundingGoal = "Funding goal must be greater than 0";
+    if (formData.funding_goal <= 0) {
+      newErrors.funding_goal = "Funding goal must be greater than 0";
     }
 
-    if (formData.fundingProgress < 0) {
-      newErrors.fundingProgress = "Funding progress cannot be negative";
+    if (formData.funding_progress < 0) {
+      newErrors.funding_progress = "Funding progress cannot be negative";
     }
 
-    if (formData.fundingProgress > formData.fundingGoal) {
-      newErrors.fundingProgress = "Funding progress cannot exceed the goal";
+    if (formData.funding_progress > formData.funding_goal) {
+      newErrors.funding_progress = "Funding progress cannot exceed the goal";
     }
 
     setErrors(newErrors);
@@ -264,7 +431,60 @@ const PropertyForm = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
-      onSubmit(formData);
+      console.log('Submitting form with property type:', formData.property_type);
+      
+      // Create base submission data
+      const submissionData: NewProperty = {
+        ...(formData.id ? { id: formData.id } : {}),
+        title: formData.title,
+        description: formData.description,
+        location: formData.location,
+        image_url: formData.image_url,
+        additional_images: formData.additional_images,
+        min_investment: formData.min_investment,
+        expected_roi: formData.expected_roi,
+        funding_progress: formData.funding_progress,
+        funding_goal: formData.funding_goal,
+        property_type: formData.property_type, // Ensure this is included
+        features: formData.features,
+        investment_term: formData.investment_term,
+        investment_details: {
+          term: formData.investment_details.term,
+          payoutFrequency: formData.investment_details.payoutFrequency,
+          exitStrategy: formData.investment_details.exitStrategy,
+          investorCount: formData.investment_details.investorCount
+        }
+      };
+
+      // If switching from NFT-properties to another type, explicitly remove NFT fields
+      if (formData.property_type !== "NFT-properties") {
+        delete submissionData.blockchain;
+        delete submissionData.marketplace;
+        delete submissionData.marketplace_url;
+        delete submissionData.min_purchase_nft;
+        delete submissionData.total_nfts;
+        delete submissionData.investment_details.marketplace_url;
+        delete submissionData.investment_details.blockchain;
+        delete submissionData.investment_details.marketplace;
+      } else {
+        // Add NFT-specific fields if it's an NFT property
+        submissionData.total_nfts = Math.floor(formData.funding_goal / 500);
+        submissionData.min_purchase_nft = 1;
+        submissionData.blockchain = formData.blockchain;
+        submissionData.marketplace = formData.marketplace;
+        submissionData.marketplace_url = formData.marketplace_url;
+        
+        // Add NFT details to investment_details
+        submissionData.investment_details = {
+          ...submissionData.investment_details,
+          marketplace_url: formData.marketplace_url,
+          blockchain: formData.blockchain,
+          marketplace: formData.marketplace
+        };
+      }
+
+      console.log('Final submission data:', submissionData);
+      onSubmit(submissionData);
     }
   };
 
@@ -326,42 +546,42 @@ const PropertyForm = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="imageUrl">Main Image URL</Label>
+            <Label htmlFor="image_url">Main Image URL</Label>
             <Input
-              id="imageUrl"
-              name="imageUrl"
-              value={formData.imageUrl}
+              id="image_url"
+              name="image_url"
+              value={formData.image_url}
               onChange={handleChange}
               placeholder="https://example.com/image.jpg"
             />
-            {errors.imageUrl && (
-              <p className="text-sm text-red-500">{errors.imageUrl}</p>
+            {errors.image_url && (
+              <p className="text-sm text-red-500">{errors.image_url}</p>
             )}
           </div>
 
           <div className="space-y-2">
             <div className="flex justify-between items-center">
-              <Label htmlFor="additionalImages">
-                Additional Images (One URL per line)
-              </Label>
+              <Label htmlFor="additional_images">
+              Additional Images (One URL per line)
+            </Label>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-gray-500">
-                  {formData.additionalImages.length} image{formData.additionalImages.length !== 1 ? 's' : ''}
+                  {formData.additional_images.length} image{formData.additional_images.length !== 1 ? 's' : ''}
                 </span>
                 <Button 
                   type="button" 
                   variant="outline" 
                   size="sm"
-                  onClick={() => setFormData(prev => ({ ...prev, additionalImages: [] }))}
+                  onClick={() => setFormData(prev => ({ ...prev, additional_images: [] }))}
                 >
                   Clear All
                 </Button>
               </div>
             </div>
             <Textarea
-              id="additionalImages"
-              name="additionalImages"
-              value={formData.additionalImages?.join("\n") || ""}
+              id="additional_images"
+              name="additional_images"
+              value={formData.additional_images?.join("\n") || ""}
               onChange={handleAdditionalImagesChange}
               onKeyDown={handleKeyDown}
               onPaste={handlePaste}
@@ -385,8 +605,8 @@ const PropertyForm = ({
                     e.preventDefault();
                     if (singleImageUrl.trim().startsWith('http')) {
                       setFormData(prev => ({
-                        ...prev,
-                        additionalImages: [...prev.additionalImages, singleImageUrl.trim()]
+                  ...prev,
+                        additional_images: [...prev.additional_images, singleImageUrl.trim()]
                       }));
                       setSingleImageUrl('');
                     }
@@ -399,7 +619,7 @@ const PropertyForm = ({
                   if (singleImageUrl.trim().startsWith('http')) {
                     setFormData(prev => ({
                       ...prev,
-                      additionalImages: [...prev.additionalImages, singleImageUrl.trim()]
+                      additional_images: [...prev.additional_images, singleImageUrl.trim()]
                     }));
                     setSingleImageUrl('');
                   }
@@ -410,11 +630,11 @@ const PropertyForm = ({
               </Button>
             </div>
             
-            {formData.additionalImages.length > 0 && (
+            {formData.additional_images.length > 0 && (
               <div className="mt-4 space-y-2">
                 <p className="text-sm font-medium">Current Images:</p>
                 <div className="space-y-2 max-h-[200px] overflow-y-auto p-2 border rounded-md">
-                  {formData.additionalImages.map((url, index) => (
+                  {formData.additional_images.map((url, index) => (
                     <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
                       <div className="text-sm truncate max-w-[80%]" title={url}>
                         {url}
@@ -424,9 +644,9 @@ const PropertyForm = ({
                         variant="ghost"
                         size="sm"
                         onClick={() => {
-                          const newImages = [...formData.additionalImages];
+                          const newImages = [...formData.additional_images];
                           newImages.splice(index, 1);
-                          setFormData(prev => ({ ...prev, additionalImages: newImages }));
+                          setFormData(prev => ({ ...prev, additional_images: newImages }));
                         }}
                       >
                         <X className="h-4 w-4" />
@@ -462,79 +682,79 @@ const PropertyForm = ({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="minInvestment">Minimum Investment</Label>
+              <Label htmlFor="min_investment">Minimum Investment</Label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">AED </span>
                 <Input
-                  id="minInvestment"
-                  name="minInvestment"
+                  id="min_investment"
+                  name="min_investment"
                   type="number"
-                  value={formData.minInvestment}
+                  value={formData.min_investment}
                   onChange={handleChange}
                   placeholder="500"
                   className="pl-16"
                 />
               </div>
-              {errors.minInvestment && (
-                <p className="text-sm text-red-500">{errors.minInvestment}</p>
+              {errors.min_investment && (
+                <p className="text-sm text-red-500">{errors.min_investment}</p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="expectedROI">Expected ROI (%)</Label>
+              <Label htmlFor="expected_roi">Expected ROI (%)</Label>
               <div className="relative">
                 <Percent className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                 <Input
-                  id="expectedROI"
-                  name="expectedROI"
+                  id="expected_roi"
+                  name="expected_roi"
                   type="number"
                   step="0.1"
-                  value={formData.expectedROI}
+                  value={formData.expected_roi}
                   onChange={handleChange}
                   placeholder="7.5"
                   className="pl-10"
                 />
               </div>
-              {errors.expectedROI && (
-                <p className="text-sm text-red-500">{errors.expectedROI}</p>
+              {errors.expected_roi && (
+                <p className="text-sm text-red-500">{errors.expected_roi}</p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="fundingGoal">Funding Goal</Label>
+              <Label htmlFor="funding_goal">Funding Goal</Label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">AED </span>
                 <Input
-                  id="fundingGoal"
-                  name="fundingGoal"
+                  id="funding_goal"
+                  name="funding_goal"
                   type="number"
-                  value={formData.fundingGoal}
+                  value={formData.funding_goal}
                   onChange={handleChange}
                   placeholder="100000"
                   className="pl-16"
                 />
               </div>
-              {errors.fundingGoal && (
-                <p className="text-sm text-red-500">{errors.fundingGoal}</p>
+              {errors.funding_goal && (
+                <p className="text-sm text-red-500">{errors.funding_goal}</p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="fundingProgress">Current Funding</Label>
+              <Label htmlFor="funding_progress">Current Funding</Label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">AED </span>
                 <Input
-                  id="fundingProgress"
-                  name="fundingProgress"
+                  id="funding_progress"
+                  name="funding_progress"
                   type="number"
-                  value={formData.fundingProgress}
+                  value={formData.funding_progress}
                   onChange={handleChange}
                   placeholder="0"
                   className="pl-16"
                 />
               </div>
-              {errors.fundingProgress && (
-                <p className="text-sm text-red-500">{errors.fundingProgress}</p>
+              {errors.funding_progress && (
+                <p className="text-sm text-red-500">{errors.funding_progress}</p>
               )}
             </div>
           </div>
@@ -543,15 +763,15 @@ const PropertyForm = ({
             <h3 className="font-semibold">Investment Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="investmentTerm">Investment Term</Label>
+                <Label htmlFor="investment_term">Investment Term</Label>
                 <Input
-                  id="investmentTerm"
-                  value={formData.investmentDetails?.term || ""}
+                  id="investment_term"
+                  value={formData.investment_details?.term || ""}
                   onChange={(e) => {
                     setFormData((prev) => ({
                       ...prev,
-                      investmentDetails: {
-                        ...prev.investmentDetails,
+                      investment_details: {
+                        ...prev.investment_details,
                         term: e.target.value,
                       },
                     }));
@@ -564,12 +784,12 @@ const PropertyForm = ({
                 <Label htmlFor="payoutFrequency">Payout Frequency</Label>
                 <Input
                   id="payoutFrequency"
-                  value={formData.investmentDetails?.payoutFrequency || ""}
+                  value={formData.investment_details?.payoutFrequency || ""}
                   onChange={(e) => {
                     setFormData((prev) => ({
                       ...prev,
-                      investmentDetails: {
-                        ...prev.investmentDetails,
+                      investment_details: {
+                        ...prev.investment_details,
                         payoutFrequency: e.target.value,
                       },
                     }));
@@ -582,12 +802,12 @@ const PropertyForm = ({
                 <Label htmlFor="exitStrategy">Exit Strategy</Label>
                 <Input
                   id="exitStrategy"
-                  value={formData.investmentDetails?.exitStrategy || ""}
+                  value={formData.investment_details?.exitStrategy || ""}
                   onChange={(e) => {
                     setFormData((prev) => ({
                       ...prev,
-                      investmentDetails: {
-                        ...prev.investmentDetails,
+                      investment_details: {
+                        ...prev.investment_details,
                         exitStrategy: e.target.value,
                       },
                     }));
@@ -601,12 +821,12 @@ const PropertyForm = ({
                 <Input
                   id="investorCount"
                   type="number"
-                  value={formData.investmentDetails?.investorCount || 0}
+                  value={formData.investment_details?.investorCount || 0}
                   onChange={(e) => {
                     setFormData((prev) => ({
                       ...prev,
-                      investmentDetails: {
-                        ...prev.investmentDetails,
+                      investment_details: {
+                        ...prev.investment_details,
                         investorCount: parseInt(e.target.value) || 0,
                       },
                     }));
@@ -618,12 +838,13 @@ const PropertyForm = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="propertyType">Property Type</Label>
+            <Label htmlFor="property_type">Property Type</Label>
             <Select
-              value={formData.propertyType}
+              value={formData.property_type}
               onValueChange={handleSelectChange}
+              defaultValue={formData.property_type}
             >
-              <SelectTrigger>
+              <SelectTrigger id="property_type">
                 <SelectValue placeholder="Select property type" />
               </SelectTrigger>
               <SelectContent>
@@ -635,6 +856,97 @@ const PropertyForm = ({
               </SelectContent>
             </Select>
           </div>
+
+          {formData.property_type === "NFT-properties" && (
+            <div className="space-y-4 border-t pt-4 mt-4">
+              <h3 className="font-semibold">NFT Details</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="total_nfts">Total NFTs</Label>
+                  <Input
+                    id="total_nfts"
+                    type="number"
+                    value={Math.floor(formData.funding_goal / 500)}
+                    disabled
+                    className="bg-gray-50"
+                  />
+                  <p className="text-sm text-gray-500">Automatically calculated (AED Price / 500)</p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="min_purchase_nft">Minimum Purchase NFTs</Label>
+                  <Input
+                    id="min_purchase_nft"
+                    type="number"
+                    value={1}
+                    disabled
+                    className="bg-gray-50"
+                  />
+                  <p className="text-sm text-gray-500">Fixed at 1 NFT (500 AED)</p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="blockchain">Blockchain</Label>
+                  <Select
+                    value={formData.blockchain || "Solana"}
+                    onValueChange={(value) => {
+                      setFormData((prev) => ({
+                        ...prev,
+                        blockchain: value,
+                      }));
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select blockchain" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {blockchainOptions.map((blockchain) => (
+                        <SelectItem key={blockchain} value={blockchain}>
+                          {blockchain}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="marketplace">Marketplace</Label>
+                  <Select
+                    value={formData.marketplace || "AlFutura"}
+                    onValueChange={(value) => {
+                      setFormData((prev) => ({
+                        ...prev,
+                        marketplace: value,
+                      }));
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select marketplace" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {marketplaceOptions.map((marketplace) => (
+                        <SelectItem key={marketplace} value={marketplace}>
+                          {marketplace}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="marketplace_url">Marketplace URL</Label>
+                  <Input
+                    id="marketplace_url"
+                    name="marketplace_url"
+                    placeholder="https://marketplace.com/nft/..."
+                    value={formData.marketplace_url || ""}
+                    onChange={handleChange}
+                  />
+                  <p className="text-sm text-gray-500">Enter the URL where the NFT is listed</p>
+                </div>
+              </div>
+            </div>
+          )}
         </CardContent>
 
         <CardFooter className="flex justify-between">

@@ -47,12 +47,26 @@ export interface Database {
           min_investment: number
           expected_roi: number
           investment_term: number
+          features: string[]
+          investment_details: {
+            term: string
+            payoutFrequency: string
+            exitStrategy: string
+            investorCount: number
+            marketplace_url?: string
+            blockchain?: string
+            marketplace?: string
+          } | null
           funding_progress: number
           funding_goal: number
-          features: string[]
-          is_featured: boolean
           created_at: string
           updated_at: string
+          is_featured?: boolean
+          total_nfts?: number
+          min_purchase_nft?: number
+          blockchain?: 'Solana' | 'Ethereum' | 'VeChain' | 'Polygon'
+          marketplace?: 'OpenSea' | 'Rarible' | 'AlFutura'
+          marketplace_url?: string
         }
         Insert: {
           id?: string
@@ -65,12 +79,26 @@ export interface Database {
           min_investment: number
           expected_roi: number
           investment_term: number
+          features?: string[]
+          investment_details?: {
+            term: string
+            payoutFrequency: string
+            exitStrategy: string
+            investorCount: number
+            marketplace_url?: string
+            blockchain?: string
+            marketplace?: string
+          } | null
           funding_progress?: number
           funding_goal: number
-          features?: string[]
-          is_featured?: boolean
           created_at?: string
           updated_at?: string
+          is_featured?: boolean
+          total_nfts?: number
+          min_purchase_nft?: number
+          blockchain?: 'Solana' | 'Ethereum' | 'VeChain' | 'Polygon'
+          marketplace?: 'OpenSea' | 'Rarible' | 'AlFutura'
+          marketplace_url?: string
         }
         Update: {
           id?: string
@@ -83,12 +111,26 @@ export interface Database {
           min_investment?: number
           expected_roi?: number
           investment_term?: number
+          features?: string[]
+          investment_details?: {
+            term: string
+            payoutFrequency: string
+            exitStrategy: string
+            investorCount: number
+            marketplace_url?: string
+            blockchain?: string
+            marketplace?: string
+          } | null
           funding_progress?: number
           funding_goal?: number
-          features?: string[]
-          is_featured?: boolean
           created_at?: string
           updated_at?: string
+          is_featured?: boolean
+          total_nfts?: number
+          min_purchase_nft?: number
+          blockchain?: 'Solana' | 'Ethereum' | 'VeChain' | 'Polygon'
+          marketplace?: 'OpenSea' | 'Rarible' | 'AlFutura'
+          marketplace_url?: string
         }
       }
       investments: {
@@ -131,4 +173,10 @@ export interface Database {
 }
 
 export type Tables<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Row']
-export type Enums<T extends keyof Database['public']['Enums']> = Database['public']['Enums'][T] 
+export type Enums<T extends keyof Database['public']['Enums']> = Database['public']['Enums'][T]
+
+// Helpful type aliases
+export type Tables = Database['public']['Tables']
+export type Property = Tables['properties']['Row']
+export type NewProperty = Tables['properties']['Insert']
+export type PropertyUpdate = Tables['properties']['Update'] 

@@ -48,6 +48,9 @@ interface Property {
     payoutFrequency: string;
     exitStrategy: string;
     investorCount: number;
+    marketplace_url?: string;
+    blockchain?: string;
+    marketplace?: string;
   } | null;
   funding_progress: number;
   funding_goal: number;
@@ -60,6 +63,9 @@ interface InvestmentDetails {
   payoutFrequency: string;
   exitStrategy: string;
   investorCount: number;
+  marketplace_url?: string;
+  blockchain?: string;
+  marketplace?: string;
 }
 
 interface PropertyDetailProps {
@@ -101,7 +107,10 @@ const PropertyDetail = ({ id, property: propProperty, hideNavigation = false }: 
         term: String(d.term || ''),
         payoutFrequency: String(d.payoutFrequency || ''),
         exitStrategy: String(d.exitStrategy || ''),
-        investorCount: Number(d.investorCount || 0)
+        investorCount: Number(d.investorCount || 0),
+        marketplace_url: d.marketplace_url as string,
+        blockchain: d.blockchain as string,
+        marketplace: d.marketplace as string
       };
     }
     return null;
@@ -279,11 +288,13 @@ const PropertyDetail = ({ id, property: propProperty, hideNavigation = false }: 
                         <div className="flex items-center mb-1">
                           <DollarSign className="h-4 w-4 text-blue-600 mr-1" />
                           <span className="text-sm text-gray-500">
-                            Min. Investment
+                            {property.property_type === "NFT-properties" ? "NFT Price" : "Min. Investment"}
                           </span>
                         </div>
                         <p className="text-lg font-semibold">
-                          AED {property.min_investment.toLocaleString()}
+                          {property.property_type === "NFT-properties" 
+                            ? "AED 500 per NFT"
+                            : `AED ${property.min_investment.toLocaleString()}`}
                         </p>
                       </div>
 
@@ -304,9 +315,13 @@ const PropertyDetail = ({ id, property: propProperty, hideNavigation = false }: 
                   {/* Funding Progress */}
                   <div>
                     <div className="flex justify-between text-sm mb-1">
-                      <span className="text-gray-600">Funding Progress</span>
+                      <span className="text-gray-600">
+                        {property.property_type === "NFT-properties" ? "NFTs Sold" : "Funding Progress"}
+                      </span>
                       <span className="font-medium text-blue-600">
-                        {Math.round(progressPercentage)}%
+                        {property.property_type === "NFT-properties"
+                          ? `${Math.floor(property.funding_progress / 500)}/${Math.floor(property.funding_goal / 500)} NFTs`
+                          : `${Math.round(progressPercentage)}%`}
                       </span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
@@ -316,23 +331,81 @@ const PropertyDetail = ({ id, property: propProperty, hideNavigation = false }: 
                       ></div>
                     </div>
                     <div className="flex justify-between text-xs text-gray-500 mt-1">
-                      <span>
-                        AED {(property.funding_progress / 1000).toFixed(1)}K raised
-                      </span>
-                      <span>
-                        Goal: AED {(property.funding_goal / 1000).toFixed(1)}K
-                      </span>
+                      {property.property_type === "NFT-properties" ? (
+                        <>
+                          <span>{Math.floor(property.funding_progress / 500)} NFTs sold</span>
+                          <span>Total: {Math.floor(property.funding_goal / 500)} NFTs</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>AED {(property.funding_progress / 1000).toFixed(1)}K raised</span>
+                          <span>Goal: AED {(property.funding_goal / 1000).toFixed(1)}K</span>
+                        </>
+                      )}
                     </div>
                   </div>
 
                   {/* Investment Details */}
                   {investmentDetails && (
                     <div className="space-y-4">
+                      {property.property_type === "NFT-properties" && (
+                        <>
+                          <div className="bg-gray-50 p-3 rounded-lg">
+                            <div className="flex items-center mb-1">
+                              <DollarSign className="h-4 w-4 text-blue-600 mr-1" />
+                              <span className="text-sm text-gray-500">
+                                Minimum Purchase
+                              </span>
+                            </div>
+                            <p className="text-gray-700">1 NFT (AED 500)</p>
+                          </div>
+
+                          <div className="bg-gray-50 p-3 rounded-lg">
+                            <div className="flex items-center mb-1">
+                              <TrendingUp className="h-4 w-4 text-blue-600 mr-1" />
+                              <span className="text-sm text-gray-500">
+                                Blockchain Network
+                              </span>
+                            </div>
+                            <p className="text-gray-700">
+                              {investmentDetails.blockchain || "Ethereum"}
+                            </p>
+                          </div>
+
+                          <div className="bg-gray-50 p-3 rounded-lg">
+                            <div className="flex items-center mb-1">
+                              <Home className="h-4 w-4 text-blue-600 mr-1" />
+                              <span className="text-sm text-gray-500">
+                                NFT Marketplace
+                              </span>
+                            </div>
+                            <p className="text-gray-700">
+                              {investmentDetails.marketplace || "OpenSea"}
+                            </p>
+                          </div>
+
+                          <Button
+                            onClick={() => {
+                              const url = investmentDetails?.marketplace_url;
+                              if (url) {
+                                window.open(url, '_blank');
+                              }
+                            }}
+                            className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold h-10 mb-2"
+                            disabled={!investmentDetails?.marketplace_url}
+                          >
+                            {investmentDetails?.marketplace_url 
+                              ? `View on ${investmentDetails.marketplace || 'Marketplace'} →`
+                              : 'No marketplace URL available'}
+                          </Button>
+                        </>
+                      )}
+
                       <div className="bg-gray-50 p-3 rounded-lg">
                         <div className="flex items-center mb-1">
                           <Calendar className="h-4 w-4 text-blue-600 mr-1" />
                           <span className="text-sm text-gray-500">
-                            Investment Term
+                            {property.property_type === "NFT-properties" ? "NFT Term" : "Investment Term"}
                           </span>
                         </div>
                         <p className="text-gray-700">{investmentDetails.term}</p>
@@ -342,7 +415,7 @@ const PropertyDetail = ({ id, property: propProperty, hideNavigation = false }: 
                         <div className="flex items-center mb-1">
                           <TrendingUp className="h-4 w-4 text-blue-600 mr-1" />
                           <span className="text-sm text-gray-500">
-                            Payout Frequency
+                            {property.property_type === "NFT-properties" ? "NFT Returns" : "Payout Frequency"}
                           </span>
                         </div>
                         <p className="text-gray-700">
@@ -354,11 +427,11 @@ const PropertyDetail = ({ id, property: propProperty, hideNavigation = false }: 
                         <div className="flex items-center mb-1">
                           <Users className="h-4 w-4 text-blue-600 mr-1" />
                           <span className="text-sm text-gray-500">
-                            Current Investors
+                            {property.property_type === "NFT-properties" ? "NFT Holders" : "Current Investors"}
                           </span>
                         </div>
                         <p className="text-gray-700">
-                          {investmentDetails.investorCount} investors
+                          {investmentDetails.investorCount} {property.property_type === "NFT-properties" ? "holders" : "investors"}
                         </p>
                       </div>
                     </div>
@@ -369,7 +442,7 @@ const PropertyDetail = ({ id, property: propProperty, hideNavigation = false }: 
                     onClick={handleInvestClick}
                     className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold h-12"
                   >
-                    Invest Now
+                    {property.property_type === "NFT-properties" ? "Purchase NFTs" : "Invest Now"}
                   </Button>
                 </div>
               </div>

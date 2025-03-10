@@ -232,16 +232,23 @@ const Dashboard = () => {
         fundingGoal: property.funding_goal,
         propertyType: property.property_type,
         features: property.features || [],
-        investmentDetails: property.investment_details || {
-          term: '',
-          payoutFrequency: '',
-          exitStrategy: '',
-          investorCount: 0
+        investmentDetails: {
+          ...(property.investment_details || {
+            term: '',
+            payoutFrequency: '',
+            exitStrategy: '',
+            investorCount: 0
+          }),
+          ...(property.property_type === "NFT-properties" ? {
+            blockchain: property.blockchain || "Ethereum",
+            marketplace: property.marketplace || "AlFutura",
+            marketplace_url: property.marketplace_url || ""
+          } : {})
         },
         is_featured: Boolean(property.is_featured)
       }));
 
-      console.log('Loaded properties:', formattedProperties);
+      console.log('Loaded and formatted properties:', formattedProperties);
       setProperties(formattedProperties);
     } catch (error) {
       console.error('Error loading properties:', error);
@@ -289,6 +296,57 @@ const Dashboard = () => {
     setPropertyToDelete(null);
   };
 
+  const handlePropertyUpdate = async (updatedProperty: any) => {
+    try {
+      setIsFormLoading(true);
+      console.log('Original update data:', updatedProperty);
+
+      // Transform the data to match the database structure
+      const propertyData = {
+        id: updatedProperty.id,
+        title: updatedProperty.title,
+        description: updatedProperty.description,
+        location: updatedProperty.location,
+        imageUrl: updatedProperty.image_url || updatedProperty.imageUrl,
+        additionalImages: updatedProperty.additional_images || updatedProperty.additionalImages || [],
+        minInvestment: updatedProperty.min_investment || updatedProperty.minInvestment,
+        expectedROI: updatedProperty.expected_roi || updatedProperty.expectedROI,
+        fundingProgress: updatedProperty.funding_progress || updatedProperty.fundingProgress,
+        fundingGoal: updatedProperty.funding_goal || updatedProperty.fundingGoal,
+        propertyType: updatedProperty.property_type || updatedProperty.propertyType,
+        features: updatedProperty.features || [],
+        investmentDetails: {
+          term: updatedProperty.investment_details?.term || updatedProperty.investmentDetails?.term || "5 years",
+          payoutFrequency: updatedProperty.investment_details?.payoutFrequency || updatedProperty.investmentDetails?.payoutFrequency || "Quarterly",
+          exitStrategy: updatedProperty.investment_details?.exitStrategy || updatedProperty.investmentDetails?.exitStrategy || "Property sale or refinancing",
+          investorCount: updatedProperty.investment_details?.investorCount || updatedProperty.investmentDetails?.investorCount || 0,
+          ...(updatedProperty.property_type === "NFT-properties" ? {
+            blockchain: updatedProperty.blockchain || updatedProperty.investment_details?.blockchain || "Ethereum",
+            marketplace: updatedProperty.marketplace || updatedProperty.investment_details?.marketplace || "AlFutura",
+            marketplace_url: updatedProperty.marketplace_url || updatedProperty.investment_details?.marketplace_url || ""
+          } : {})
+        },
+        is_featured: updatedProperty.is_featured
+      };
+
+      console.log('Transformed property data:', propertyData);
+
+      const result = await updateProperty(propertyData);
+      console.log('Update result:', result);
+      
+      // Refresh the properties list with the updated data
+      await loadProperties();
+      
+      setCurrentView(AdminView.LIST);
+      toast.success("Property updated successfully!");
+    } catch (error) {
+      console.error("Error updating property:", error);
+      toast.error("Failed to update property");
+    } finally {
+      setIsFormLoading(false);
+    }
+  };
+
   const handleFormSubmit = async (formData: PropertyFormData) => {
     setIsFormLoading(true);
 
@@ -321,37 +379,7 @@ const Dashboard = () => {
         alert("Property created successfully!");
       } else if (currentView === AdminView.EDIT && selectedProperty) {
         // Update existing property in Supabase
-        const updatedProperty = await updateProperty({
-          ...formData,
-          id: selectedProperty.id,
-        });
-        // Convert from snake_case to camelCase
-        const formattedProperty = {
-          id: updatedProperty.id,
-          title: updatedProperty.title,
-          description: updatedProperty.description,
-          location: updatedProperty.location,
-          imageUrl: updatedProperty.image_url,
-          additionalImages: updatedProperty.additional_images || [],
-          minInvestment: updatedProperty.min_investment,
-          expectedROI: updatedProperty.expected_roi,
-          fundingProgress: updatedProperty.funding_progress,
-          fundingGoal: updatedProperty.funding_goal,
-          propertyType: updatedProperty.property_type,
-          features: updatedProperty.features || [],
-          investmentDetails: updatedProperty.investment_details || {
-            term: "5 years",
-            payoutFrequency: "Quarterly",
-            exitStrategy: "Property sale or refinancing",
-            investorCount: 0,
-          },
-        };
-        setProperties(
-          properties.map((p) =>
-            p.id === selectedProperty.id ? formattedProperty : p,
-          ),
-        );
-        alert("Property updated successfully!");
+        await handlePropertyUpdate(formData);
       }
 
       setCurrentView(AdminView.LIST);

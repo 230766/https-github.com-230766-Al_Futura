@@ -3,7 +3,7 @@ import { Card } from "./ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Input } from "./ui/input";
 import { Slider } from "./ui/slider";
-import { Search, MapPin, Home, TrendingUp, Users, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, MapPin, Home, TrendingUp, Users, ChevronLeft, ChevronRight, Wallet } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
 
@@ -33,7 +33,13 @@ const PropertyCard = ({
   propertyType = "Residential",
   onClick = () => {},
 }: PropertyCardProps) => {
-  const progressPercentage = (fundingProgress / fundingGoal) * 100;
+  const isNFTProperty = propertyType === "NFT-properties";
+  const totalNFTs = isNFTProperty ? Math.floor(fundingGoal / 500) : 0;
+  const soldNFTs = isNFTProperty ? Math.floor(fundingProgress / 500) : 0;
+  const progressPercentage = isNFTProperty 
+    ? Math.min((soldNFTs / totalNFTs) * 100, 100)
+    : Math.min((fundingProgress / fundingGoal) * 100, 100);
+  const nftCount = isNFTProperty ? Math.floor(minInvestment / 500) : 0;
 
   return (
     <Card className="overflow-hidden h-full flex flex-col bg-white shadow-md hover:shadow-lg transition-shadow duration-300">
@@ -54,8 +60,12 @@ const PropertyCard = ({
 
         <div className="grid grid-cols-2 gap-3 mb-3">
           <div className="bg-gray-50 p-2 rounded">
-            <p className="text-xs text-gray-500">Min. Investment</p>
-            <p className="font-semibold text-blue-600">AED {minInvestment}</p>
+            <p className="text-xs text-gray-500">
+              {isNFTProperty ? "Min. Purchase NFTs" : "Min. Investment"}
+            </p>
+            <p className="font-semibold text-blue-600">
+              {isNFTProperty ? `${nftCount} NFT` : `AED ${minInvestment}`}
+            </p>
           </div>
           <div className="bg-gray-50 p-2 rounded">
             <p className="text-xs text-gray-500">Expected ROI</p>
@@ -65,20 +75,31 @@ const PropertyCard = ({
 
         <div className="mt-auto">
           <div className="flex justify-between text-sm mb-1">
-            <span>Funding Progress</span>
+            <span>{isNFTProperty ? "NFTs Sold" : "Funding Progress"}</span>
             <span className="font-medium">
-              {Math.round(progressPercentage)}%
+              {isNFTProperty 
+                ? `${soldNFTs}/${totalNFTs} NFTs (${Math.round(progressPercentage)}%)` 
+                : `${Math.round(progressPercentage)}%`}
             </span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2.5">
             <div
-              className="bg-blue-600 h-2.5 rounded-full"
+              className="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
               style={{ width: `${progressPercentage}%` }}
             ></div>
           </div>
           <div className="flex justify-between text-xs text-gray-500 mt-1">
-            <span>AED {(fundingProgress / 1000).toFixed(1)}K raised</span>
-            <span>Goal: AED {(fundingGoal / 1000).toFixed(1)}K</span>
+            {isNFTProperty ? (
+              <>
+                <span>{soldNFTs} NFTs sold</span>
+                <span>Total: {totalNFTs} NFTs</span>
+              </>
+            ) : (
+              <>
+                <span>AED {(fundingProgress / 1000).toFixed(1)}K raised</span>
+                <span>Goal: AED {(fundingGoal / 1000).toFixed(1)}K</span>
+              </>
+            )}
           </div>
         </div>
 
@@ -182,6 +203,18 @@ const PropertyGrid = ({
       fundingGoal: 1830000,
       propertyType: "Industrial",
     },
+    {
+      id: "7",
+      title: "Digital Real Estate NFT Collection",
+      location: "Metaverse, Virtual Dubai",
+      imageUrl:
+        "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?w=800&q=80",
+      minInvestment: 1500,
+      expectedROI: 12.5,
+      fundingProgress: 180000,
+      fundingGoal: 300000,
+      propertyType: "NFT-properties",
+    },
   ],
   title = "Investment Opportunities",
   description = "Discover high-yield real estate investment opportunities with low minimum investments.",
@@ -206,7 +239,7 @@ const PropertyGrid = ({
   // Filter properties based on active tab, search query, and filter options
   const filteredProperties = properties.filter((property) => {
     // Filter by tab (property type)
-    if (activeTab !== "all" && property.propertyType.toLowerCase() !== activeTab) {
+    if (activeTab !== "all" && property.propertyType !== activeTab) {
       return false;
     }
 
@@ -221,8 +254,6 @@ const PropertyGrid = ({
 
     // Filter by custom filters
     if (
-      (filterOptions.propertyType !== "all" &&
-        property.propertyType !== filterOptions.propertyType) ||
       property.minInvestment < filterOptions.minInvestment ||
       property.expectedROI < filterOptions.expectedROI ||
       (filterOptions.location &&
@@ -259,10 +290,15 @@ const PropertyGrid = ({
     }
   };
 
-  // Get unique property types for tabs
+  // Define fixed property types array
   const propertyTypes = [
     "all",
-    ...new Set(properties.map((p) => p.propertyType)),
+    "Residential",
+    "Commercial",
+    "Vacation",
+    "Retail",
+    "Industrial",
+    "NFT-properties"
   ];
 
   const handlePropertyClick = (propertyId: string) => {
@@ -271,7 +307,7 @@ const PropertyGrid = ({
 
   // Handle tab change
   const handleTabChange = (value: string) => {
-    setActiveTab(value);
+    setActiveTab(value === "all" ? "all" : propertyTypes.find(type => type.toLowerCase() === value) || "all");
     setCurrentPage(1); // Reset to first page when tab changes
   };
 
@@ -354,12 +390,12 @@ const PropertyGrid = ({
           {/* Property type tabs */}
           <Tabs
             defaultValue="all"
-            value={activeTab}
+            value={activeTab.toLowerCase()}
             onValueChange={handleTabChange}
           >
             <TabsList className="mb-6">
               {propertyTypes.map((type) => (
-                <TabsTrigger key={type} value={type} className="capitalize">
+                <TabsTrigger key={type} value={type.toLowerCase()} className="capitalize">
                   {type === "all" ? "All Properties" : type}
                   {type === "all" ? (
                     <Home className="ml-2" size={16} />
@@ -369,6 +405,8 @@ const PropertyGrid = ({
                     <TrendingUp className="ml-2" size={16} />
                   ) : type === "Vacation" ? (
                     <Users className="ml-2" size={16} />
+                  ) : type === "NFT-properties" ? (
+                    <Wallet className="ml-2" size={16} />
                   ) : (
                     <Home className="ml-2" size={16} />
                   )}
@@ -376,43 +414,40 @@ const PropertyGrid = ({
               ))}
             </TabsList>
 
-            {propertyTypes.map((type) => (
-              <TabsContent key={type} value={type} className="mt-0">
-                {/* Property grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {currentProperties.map((property) => (
-                    <PropertyCard
-                      key={property.id}
-                      {...property}
-                      onClick={() => handlePropertyClick(property.id)}
-                    />
-                  ))}
-                </div>
+            <TabsContent value={activeTab.toLowerCase()} className="mt-0">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {currentProperties.map((property) => (
+                  <PropertyCard
+                    key={property.id}
+                    {...property}
+                    onClick={() => handlePropertyClick(property.id)}
+                  />
+                ))}
+              </div>
 
-                {filteredProperties.length === 0 && (
-                  <div className="text-center py-12">
-                    <p className="text-gray-500">
-                      No properties match your current filters.
-                    </p>
-                    <button
-                      className="mt-4 text-blue-600 hover:text-blue-800"
-                      onClick={() => {
-                        setSearchQuery("");
-                        handleFilterChange({
-                          propertyType: "all",
-                          minInvestment: 0,
-                          expectedROI: 0,
-                          location: "",
-                        });
-                        handleTabChange("all");
-                      }}
-                    >
-                      Reset Filters
-                    </button>
-                  </div>
-                )}
-              </TabsContent>
-            ))}
+              {filteredProperties.length === 0 && (
+                <div className="text-center py-12">
+                  <p className="text-gray-500">
+                    No properties match your current filters.
+                  </p>
+                  <button
+                    className="mt-4 text-blue-600 hover:text-blue-800"
+                    onClick={() => {
+                      setSearchQuery("");
+                      handleFilterChange({
+                        propertyType: "all",
+                        minInvestment: 0,
+                        expectedROI: 0,
+                        location: "",
+                      });
+                      handleTabChange("all");
+                    }}
+                  >
+                    Reset Filters
+                  </button>
+                </div>
+              )}
+            </TabsContent>
           </Tabs>
         </div>
 
