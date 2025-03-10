@@ -33,7 +33,6 @@ interface Property {
   property_type: string;
   min_investment: number;
   expected_roi: number;
-  investment_term: number;
   features: string[];
   investment_details: {
     term: string;
@@ -263,7 +262,7 @@ const Dashboard = () => {
           funding_goal: property.funding_goal,
           property_type: property.property_type,
           features: property.features || [],
-          investment_term: property.investment_term,
+          investment_term: 5, // Default value since it's not in the database
           investment_details: {
             term: investmentDetails.term,
             payoutFrequency: investmentDetails.payoutFrequency,

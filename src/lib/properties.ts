@@ -55,6 +55,7 @@ export const createProperty = async (property: PropertyFormData) => {
     });
   }
 
+  // Create new property data without investment_term field
   const newProperty = {
     title: property.title,
     description: property.description,
@@ -67,7 +68,7 @@ export const createProperty = async (property: PropertyFormData) => {
     funding_goal: property.funding_goal,
     property_type: property.property_type,
     features: property.features || [],
-    investment_term: property.investment_term,
+    // Remove investment_term field as it doesn't exist in the database
     investment_details: investmentDetails,
     created_at: new Date(),
     updated_at: new Date()
@@ -128,6 +129,7 @@ export const updateProperty = async (property: PropertyFormData) => {
     });
   }
 
+  // Create update data without investment_term field
   const updateData = {
     title: property.title,
     description: property.description,
@@ -140,7 +142,7 @@ export const updateProperty = async (property: PropertyFormData) => {
     funding_goal: property.funding_goal,
     property_type: property.property_type,
     features: property.features || [],
-    investment_term: property.investment_term,
+    // Remove investment_term field as it doesn't exist in the database
     investment_details: investmentDetails,
     updated_at: new Date()
   };
