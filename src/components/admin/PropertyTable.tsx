@@ -41,7 +41,7 @@ const PropertyTable = ({
     return (
       property.title.toLowerCase().includes(searchLower) ||
       property.location.toLowerCase().includes(searchLower) ||
-      property.propertyType.toLowerCase().includes(searchLower)
+      property.property_type.toLowerCase().includes(searchLower)
     );
   });
 
@@ -138,14 +138,14 @@ const PropertyTable = ({
                         variant="outline"
                         className="bg-blue-50 text-blue-700 hover:bg-blue-50"
                       >
-                        {property.propertyType}
+                        {property.property_type}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      AED {property.minInvestment.toLocaleString()}
+                      AED {property.min_investment.toLocaleString()}
                     </TableCell>
                     <TableCell className="text-green-600">
-                      {property.expectedROI}%
+                      {property.expected_roi}%
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-col space-y-1">
@@ -153,13 +153,13 @@ const PropertyTable = ({
                           <div
                             className="bg-blue-600 h-2 rounded-full"
                             style={{
-                              width: `${Math.min(100, (property.fundingProgress / property.fundingGoal) * 100)}%`,
+                              width: `${Math.min(100, (property.funding_progress / property.funding_goal) * 100)}%`,
                             }}
                           ></div>
                         </div>
                         <span className="text-xs text-gray-500">
-                          AED {property.fundingProgress.toLocaleString()} / 
-                          AED {property.fundingGoal.toLocaleString()}
+                          AED {property.funding_progress.toLocaleString()} / 
+                          AED {property.funding_goal.toLocaleString()}
                         </span>
                       </div>
                     </TableCell>

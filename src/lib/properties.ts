@@ -32,33 +32,63 @@ export const fetchPropertyById = async (id: string) => {
 
 export const createProperty = async (property: PropertyFormData) => {
   // Ensure we have valid data
-  if (!property.title || !property.location || !property.imageUrl) {
+  if (!property.title || !property.location || !property.image_url) {
     throw new Error("Missing required property fields");
   }
 
+  console.log('Creating property in database:', property);
+
+  // Ensure investorCount is included in the investment_details
+  const investmentDetails = {
+    term: property.investment_details?.term || "5 years",
+    payoutFrequency: property.investment_details?.payoutFrequency || "Quarterly",
+    exitStrategy: property.investment_details?.exitStrategy || "Property sale or refinancing",
+    investorCount: property.investment_details?.investorCount || 0
+  };
+
+  // Add NFT-specific fields to investment_details if it's an NFT property
+  if (property.property_type === "NFT-properties") {
+    Object.assign(investmentDetails, {
+      blockchain: property.blockchain || property.investment_details?.blockchain || "Ethereum",
+      marketplace: property.marketplace || property.investment_details?.marketplace || "AlFutura",
+      marketplace_url: property.marketplace_url || property.investment_details?.marketplace_url || ""
+    });
+  }
+
+  const newProperty = {
+    title: property.title,
+    description: property.description,
+    location: property.location,
+    image_url: property.image_url,
+    additional_images: property.additional_images || [],
+    min_investment: property.min_investment,
+    expected_roi: property.expected_roi,
+    funding_progress: property.funding_progress || 0,
+    funding_goal: property.funding_goal,
+    property_type: property.property_type,
+    features: property.features || [],
+    investment_term: property.investment_term,
+    investment_details: investmentDetails,
+    created_at: new Date(),
+    updated_at: new Date()
+  };
+
+  // Add NFT-specific fields only if it's an NFT property
+  if (property.property_type === "NFT-properties") {
+    Object.assign(newProperty, {
+      blockchain: property.blockchain || "Ethereum",
+      marketplace: property.marketplace || "AlFutura",
+      marketplace_url: property.marketplace_url || "",
+      min_purchase_nft: property.min_purchase_nft || 1,
+      total_nfts: property.total_nfts || Math.floor(property.funding_goal / 500)
+    });
+  }
+
+  console.log('Final new property data:', newProperty);
+
   const { data, error } = await supabase
     .from("properties")
-    .insert([
-      {
-        title: property.title,
-        description: property.description,
-        location: property.location,
-        image_url: property.imageUrl,
-        additional_images: property.additionalImages || [],
-        min_investment: property.minInvestment,
-        expected_roi: property.expectedROI,
-        funding_progress: property.fundingProgress || 0,
-        funding_goal: property.fundingGoal,
-        property_type: property.propertyType,
-        features: property.features || [],
-        investment_details: property.investmentDetails || {
-          term: "5 years",
-          payoutFrequency: "Quarterly",
-          exitStrategy: "Property sale or refinancing",
-          investorCount: 0,
-        },
-      },
-    ])
+    .insert(newProperty)
     .select();
 
   if (error) {
@@ -75,7 +105,7 @@ export const updateProperty = async (property: PropertyFormData) => {
   }
 
   // Ensure we have valid data
-  if (!property.title || !property.location || !property.imageUrl) {
+  if (!property.title || !property.location || !property.image_url) {
     throw new Error("Missing required property fields");
   }
 
@@ -83,18 +113,18 @@ export const updateProperty = async (property: PropertyFormData) => {
 
   // Ensure investorCount is included in the investment_details
   const investmentDetails = {
-    term: property.investmentDetails?.term || "5 years",
-    payoutFrequency: property.investmentDetails?.payoutFrequency || "Quarterly",
-    exitStrategy: property.investmentDetails?.exitStrategy || "Property sale or refinancing",
-    investorCount: property.investmentDetails?.investorCount || 0
+    term: property.investment_details?.term || "5 years",
+    payoutFrequency: property.investment_details?.payoutFrequency || "Quarterly",
+    exitStrategy: property.investment_details?.exitStrategy || "Property sale or refinancing",
+    investorCount: property.investment_details?.investorCount || 0
   };
 
   // Add NFT-specific fields to investment_details if it's an NFT property
-  if (property.propertyType === "NFT-properties" && property.investmentDetails) {
+  if (property.property_type === "NFT-properties") {
     Object.assign(investmentDetails, {
-      blockchain: property.investmentDetails.blockchain || "Ethereum",
-      marketplace: property.investmentDetails.marketplace || "AlFutura",
-      marketplace_url: property.investmentDetails.marketplace_url || ""
+      blockchain: property.blockchain || property.investment_details?.blockchain || "Ethereum",
+      marketplace: property.marketplace || property.investment_details?.marketplace || "AlFutura",
+      marketplace_url: property.marketplace_url || property.investment_details?.marketplace_url || ""
     });
   }
 
@@ -102,26 +132,27 @@ export const updateProperty = async (property: PropertyFormData) => {
     title: property.title,
     description: property.description,
     location: property.location,
-    image_url: property.imageUrl,
-    additional_images: property.additionalImages || [],
-    min_investment: property.minInvestment,
-    expected_roi: property.expectedROI,
-    funding_progress: property.fundingProgress,
-    funding_goal: property.fundingGoal,
-    property_type: property.propertyType,
+    image_url: property.image_url,
+    additional_images: property.additional_images || [],
+    min_investment: property.min_investment,
+    expected_roi: property.expected_roi,
+    funding_progress: property.funding_progress,
+    funding_goal: property.funding_goal,
+    property_type: property.property_type,
     features: property.features || [],
+    investment_term: property.investment_term,
     investment_details: investmentDetails,
     updated_at: new Date()
   };
 
   // Add NFT-specific fields only if it's an NFT property
-  if (property.propertyType === "NFT-properties") {
+  if (property.property_type === "NFT-properties") {
     Object.assign(updateData, {
-      blockchain: property.investmentDetails?.blockchain || "Ethereum",
-      marketplace: property.investmentDetails?.marketplace || "AlFutura",
-      marketplace_url: property.investmentDetails?.marketplace_url || "",
-      min_purchase_nft: 1,
-      total_nfts: Math.floor(property.fundingGoal / 500)
+      blockchain: property.blockchain || "Ethereum",
+      marketplace: property.marketplace || "AlFutura",
+      marketplace_url: property.marketplace_url || "",
+      min_purchase_nft: property.min_purchase_nft || 1,
+      total_nfts: property.total_nfts || Math.floor(property.funding_goal / 500)
     });
   }
 

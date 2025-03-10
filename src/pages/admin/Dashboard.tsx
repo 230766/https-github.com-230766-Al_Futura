@@ -40,12 +40,20 @@ interface Property {
     payoutFrequency: string;
     exitStrategy: string;
     investorCount: number;
+    marketplace_url?: string;
+    blockchain?: string;
+    marketplace?: string;
   } | null;
   funding_progress: number;
   funding_goal: number;
   is_featured?: boolean;
   created_at: string;
   updated_at: string;
+  blockchain?: string;
+  marketplace?: string;
+  marketplace_url?: string;
+  total_nfts?: number;
+  min_purchase_nft?: number;
 }
 
 interface PropertyFormData {
@@ -53,21 +61,30 @@ interface PropertyFormData {
   title: string;
   description: string;
   location: string;
-  imageUrl: string;
-  additionalImages: string[];
-  minInvestment: number;
-  expectedROI: number;
-  fundingProgress: number;
-  fundingGoal: number;
-  propertyType: string;
+  image_url: string;
+  additional_images?: string[];
+  min_investment: number;
+  expected_roi: number;
+  funding_progress: number;
+  funding_goal: number;
+  property_type: string;
   features: string[];
-  investmentDetails: {
+  investment_term: number;
+  investment_details: {
     term: string;
     payoutFrequency: string;
     exitStrategy: string;
     investorCount: number;
+    marketplace_url?: string;
+    blockchain?: string;
+    marketplace?: string;
   };
   is_featured?: boolean;
+  blockchain?: "Solana" | "Ethereum" | "VeChain" | "Polygon";
+  marketplace?: "OpenSea" | "Rarible" | "AlFutura";
+  marketplace_url?: string;
+  total_nfts?: number;
+  min_purchase_nft?: number;
 }
 
 // Define view types as string constants instead of enum
@@ -232,32 +249,46 @@ const Dashboard = () => {
 
         console.log(`Property ${property.id} investment_details:`, property.investment_details);
         
-        return {
+        // Create a property object with snake_case property names
+        const formattedProperty: PropertyFormData = {
           id: property.id,
           title: property.title,
           description: property.description,
           location: property.location,
-          imageUrl: property.image_url,
-          additionalImages: property.additional_images || [],
-          minInvestment: property.min_investment,
-          expectedROI: property.expected_roi,
-          fundingProgress: property.funding_progress,
-          fundingGoal: property.funding_goal,
-          propertyType: property.property_type,
+          image_url: property.image_url,
+          additional_images: property.additional_images || [],
+          min_investment: property.min_investment,
+          expected_roi: property.expected_roi,
+          funding_progress: property.funding_progress,
+          funding_goal: property.funding_goal,
+          property_type: property.property_type,
           features: property.features || [],
-          investmentDetails: {
+          investment_term: property.investment_term,
+          investment_details: {
             term: investmentDetails.term,
             payoutFrequency: investmentDetails.payoutFrequency,
             exitStrategy: investmentDetails.exitStrategy,
-            investorCount: investmentDetails.investorCount,
-            ...(property.property_type === "NFT-properties" ? {
-              blockchain: property.blockchain || investmentDetails.blockchain || "Ethereum",
-              marketplace: property.marketplace || investmentDetails.marketplace || "AlFutura",
-              marketplace_url: property.marketplace_url || investmentDetails.marketplace_url || ""
-            } : {})
+            investorCount: investmentDetails.investorCount
           },
           is_featured: Boolean(property.is_featured)
         };
+
+        // Add NFT-specific fields if it's an NFT property
+        if (property.property_type === "NFT-properties") {
+          // Cast to the correct type for blockchain and marketplace
+          formattedProperty.blockchain = (property.blockchain || "Ethereum") as "Ethereum" | "Solana" | "VeChain" | "Polygon";
+          formattedProperty.marketplace = (property.marketplace || "AlFutura") as "OpenSea" | "Rarible" | "AlFutura";
+          formattedProperty.marketplace_url = property.marketplace_url || "";
+          formattedProperty.min_purchase_nft = property.min_purchase_nft || 1;
+          formattedProperty.total_nfts = property.total_nfts || Math.floor(property.funding_goal / 500);
+          
+          // Add NFT-specific fields to investment_details
+          formattedProperty.investment_details.blockchain = property.blockchain || "Ethereum";
+          formattedProperty.investment_details.marketplace = property.marketplace || "AlFutura";
+          formattedProperty.investment_details.marketplace_url = property.marketplace_url || "";
+        }
+
+        return formattedProperty;
       });
 
       console.log('Formatted properties:', formattedProperties);
@@ -314,40 +345,50 @@ const Dashboard = () => {
       console.log('Original update data:', updatedProperty);
       console.log('Original investment details:', {
         investment_details: updatedProperty.investment_details,
-        investmentDetails: updatedProperty.investmentDetails,
-        investorCount: updatedProperty.investment_details?.investorCount || updatedProperty.investmentDetails?.investorCount
+        investorCount: updatedProperty.investment_details?.investorCount
       });
 
       // Transform the data to match the database structure
-      const propertyData = {
+      const propertyData: PropertyFormData = {
         id: updatedProperty.id,
         title: updatedProperty.title,
         description: updatedProperty.description,
         location: updatedProperty.location,
-        imageUrl: updatedProperty.image_url || updatedProperty.imageUrl,
-        additionalImages: updatedProperty.additional_images || updatedProperty.additionalImages || [],
-        minInvestment: updatedProperty.min_investment || updatedProperty.minInvestment,
-        expectedROI: updatedProperty.expected_roi || updatedProperty.expectedROI,
-        fundingProgress: updatedProperty.funding_progress || updatedProperty.fundingProgress,
-        fundingGoal: updatedProperty.funding_goal || updatedProperty.fundingGoal,
-        propertyType: updatedProperty.property_type || updatedProperty.propertyType,
+        image_url: updatedProperty.image_url,
+        additional_images: updatedProperty.additional_images || [],
+        min_investment: updatedProperty.min_investment,
+        expected_roi: updatedProperty.expected_roi,
+        funding_progress: updatedProperty.funding_progress,
+        funding_goal: updatedProperty.funding_goal,
+        property_type: updatedProperty.property_type,
         features: updatedProperty.features || [],
-        investmentDetails: {
-          term: updatedProperty.investment_details?.term || updatedProperty.investmentDetails?.term || "5 years",
-          payoutFrequency: updatedProperty.investment_details?.payoutFrequency || updatedProperty.investmentDetails?.payoutFrequency || "Quarterly",
-          exitStrategy: updatedProperty.investment_details?.exitStrategy || updatedProperty.investmentDetails?.exitStrategy || "Property sale or refinancing",
-          investorCount: updatedProperty.investment_details?.investorCount || updatedProperty.investmentDetails?.investorCount || 0,
-          ...(updatedProperty.property_type === "NFT-properties" || updatedProperty.propertyType === "NFT-properties" ? {
-            blockchain: updatedProperty.blockchain || updatedProperty.investment_details?.blockchain || updatedProperty.investmentDetails?.blockchain || "Ethereum",
-            marketplace: updatedProperty.marketplace || updatedProperty.investment_details?.marketplace || updatedProperty.investmentDetails?.marketplace || "AlFutura",
-            marketplace_url: updatedProperty.marketplace_url || updatedProperty.investment_details?.marketplace_url || updatedProperty.investmentDetails?.marketplace_url || ""
-          } : {})
+        investment_term: updatedProperty.investment_term,
+        investment_details: {
+          term: updatedProperty.investment_details?.term || "5 years",
+          payoutFrequency: updatedProperty.investment_details?.payoutFrequency || "Quarterly",
+          exitStrategy: updatedProperty.investment_details?.exitStrategy || "Property sale or refinancing",
+          investorCount: updatedProperty.investment_details?.investorCount || 0
         },
         is_featured: updatedProperty.is_featured
       };
 
+      // Add NFT-specific fields if it's an NFT property
+      if (updatedProperty.property_type === "NFT-properties") {
+        // Cast to the correct type for blockchain and marketplace
+        propertyData.blockchain = (updatedProperty.blockchain || "Ethereum") as "Ethereum" | "Solana" | "VeChain" | "Polygon";
+        propertyData.marketplace = (updatedProperty.marketplace || "AlFutura") as "OpenSea" | "Rarible" | "AlFutura";
+        propertyData.marketplace_url = updatedProperty.marketplace_url || "";
+        propertyData.min_purchase_nft = updatedProperty.min_purchase_nft || 1;
+        propertyData.total_nfts = updatedProperty.total_nfts || Math.floor(updatedProperty.funding_goal / 500);
+        
+        // Add NFT-specific fields to investment_details
+        propertyData.investment_details.blockchain = updatedProperty.blockchain || "Ethereum";
+        propertyData.investment_details.marketplace = updatedProperty.marketplace || "AlFutura";
+        propertyData.investment_details.marketplace_url = updatedProperty.marketplace_url || "";
+      }
+
       console.log('Transformed property data:', propertyData);
-      console.log('Transformed investment details:', propertyData.investmentDetails);
+      console.log('Transformed investment details:', propertyData.investment_details);
 
       const result = await updateProperty(propertyData);
       console.log('Update result:', result);
@@ -366,44 +407,104 @@ const Dashboard = () => {
   };
 
   const handleFormSubmit = async (formData: PropertyFormData) => {
-    setIsFormLoading(true);
-
     try {
+      setIsFormLoading(true);
+      console.log('Form data received:', formData);
+
+      // Convert the NewProperty to PropertyFormData
+      const propertyData: PropertyFormData = {
+        id: formData.id,
+        title: formData.title,
+        description: formData.description,
+        location: formData.location,
+        image_url: formData.image_url,
+        additional_images: formData.additional_images || [],
+        min_investment: formData.min_investment,
+        expected_roi: formData.expected_roi,
+        funding_progress: formData.funding_progress || 0,
+        funding_goal: formData.funding_goal,
+        property_type: formData.property_type,
+        features: formData.features || [],
+        investment_term: formData.investment_term,
+        investment_details: {
+          term: formData.investment_details?.term || "5 years",
+          payoutFrequency: formData.investment_details?.payoutFrequency || "Quarterly",
+          exitStrategy: formData.investment_details?.exitStrategy || "Property sale or refinancing",
+          investorCount: formData.investment_details?.investorCount || 0
+        },
+        is_featured: formData.is_featured
+      };
+
+      // Add NFT-specific fields if it's an NFT property
+      if (formData.property_type === "NFT-properties") {
+        // Cast to the correct type for blockchain and marketplace
+        propertyData.blockchain = (formData.blockchain || "Ethereum") as "Ethereum" | "Solana" | "VeChain" | "Polygon";
+        propertyData.marketplace = (formData.marketplace || "AlFutura") as "OpenSea" | "Rarible" | "AlFutura";
+        propertyData.marketplace_url = formData.marketplace_url || "";
+        propertyData.min_purchase_nft = formData.min_purchase_nft || 1;
+        propertyData.total_nfts = formData.total_nfts || Math.floor(formData.funding_goal / 500);
+        
+        // Add NFT-specific fields to investment_details
+        propertyData.investment_details.blockchain = formData.blockchain || "Ethereum";
+        propertyData.investment_details.marketplace = formData.marketplace || "AlFutura";
+        propertyData.investment_details.marketplace_url = formData.marketplace_url || "";
+      }
+
+      console.log('Transformed property data for submission:', propertyData);
+
       if (currentView === AdminView.ADD) {
-        // Add new property to Supabase
-        const newProperty = await createProperty(formData);
-        // Convert from snake_case to camelCase
-        const formattedProperty = {
+        const newProperty = await createProperty(propertyData);
+        console.log('New property created:', newProperty);
+        
+        // Format the new property for the UI
+        const formattedProperty: PropertyFormData = {
           id: newProperty.id,
           title: newProperty.title,
           description: newProperty.description,
           location: newProperty.location,
-          imageUrl: newProperty.image_url,
-          additionalImages: newProperty.additional_images || [],
-          minInvestment: newProperty.min_investment,
-          expectedROI: newProperty.expected_roi,
-          fundingProgress: newProperty.funding_progress,
-          fundingGoal: newProperty.funding_goal,
-          propertyType: newProperty.property_type,
+          image_url: newProperty.image_url,
+          additional_images: newProperty.additional_images || [],
+          min_investment: newProperty.min_investment,
+          expected_roi: newProperty.expected_roi,
+          funding_progress: newProperty.funding_progress,
+          funding_goal: newProperty.funding_goal,
+          property_type: newProperty.property_type,
           features: newProperty.features || [],
-          investmentDetails: newProperty.investment_details || {
-            term: "5 years",
-            payoutFrequency: "Quarterly",
-            exitStrategy: "Property sale or refinancing",
-            investorCount: 0,
+          investment_term: newProperty.investment_term,
+          investment_details: {
+            term: newProperty.investment_details?.term || "5 years",
+            payoutFrequency: newProperty.investment_details?.payoutFrequency || "Quarterly",
+            exitStrategy: newProperty.investment_details?.exitStrategy || "Property sale or refinancing",
+            investorCount: newProperty.investment_details?.investorCount || 0
           },
+          is_featured: Boolean(newProperty.is_featured)
         };
+
+        // Add NFT-specific fields if it's an NFT property
+        if (newProperty.property_type === "NFT-properties") {
+          // Cast to the correct type for blockchain and marketplace
+          formattedProperty.blockchain = (newProperty.blockchain || "Ethereum") as "Ethereum" | "Solana" | "VeChain" | "Polygon";
+          formattedProperty.marketplace = (newProperty.marketplace || "AlFutura") as "OpenSea" | "Rarible" | "AlFutura";
+          formattedProperty.marketplace_url = newProperty.marketplace_url || "";
+          formattedProperty.min_purchase_nft = newProperty.min_purchase_nft || 1;
+          formattedProperty.total_nfts = newProperty.total_nfts || Math.floor(newProperty.funding_goal / 500);
+          
+          // Add NFT-specific fields to investment_details
+          formattedProperty.investment_details.blockchain = newProperty.blockchain || "Ethereum";
+          formattedProperty.investment_details.marketplace = newProperty.marketplace || "AlFutura";
+          formattedProperty.investment_details.marketplace_url = newProperty.marketplace_url || "";
+        }
+
         setProperties([formattedProperty, ...properties]);
-        alert("Property created successfully!");
-      } else if (currentView === AdminView.EDIT && selectedProperty) {
-        // Update existing property in Supabase
-        await handlePropertyUpdate(formData);
+        toast.success("Property added successfully!");
+      } else {
+        await handlePropertyUpdate(propertyData);
       }
 
       setCurrentView(AdminView.LIST);
     } catch (error) {
-      console.error("Error saving property:", error);
-      alert(`Error saving property: ${error.message || "Unknown error"}`);
+      console.error("Error submitting property form:", error);
+      toast.error("Failed to submit property");
     } finally {
       setIsFormLoading(false);
     }

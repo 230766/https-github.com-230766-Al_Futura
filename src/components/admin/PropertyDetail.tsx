@@ -25,7 +25,7 @@ interface PropertyDetailProps {
 
 const PropertyDetail = ({ property, onBack, onEdit }: PropertyDetailProps) => {
   const progressPercentage =
-    (property.fundingProgress / property.fundingGoal) * 100;
+    (property.funding_progress / property.funding_goal) * 100;
 
   return (
     <Card className="w-full bg-white">
@@ -45,23 +45,23 @@ const PropertyDetail = ({ property, onBack, onEdit }: PropertyDetailProps) => {
           variant="outline"
           className="bg-blue-50 text-blue-700 hover:bg-blue-50"
         >
-          {property.propertyType}
+          {property.property_type}
         </Badge>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Main Image */}
         <div className="aspect-video w-full overflow-hidden rounded-lg">
           <img
-            src={property.imageUrl}
+            src={property.image_url}
             alt={property.title}
             className="w-full h-full object-cover"
           />
         </div>
 
         {/* Additional Images */}
-        {property.additionalImages && property.additionalImages.length > 0 && (
+        {property.additional_images && property.additional_images.length > 0 && (
           <div className="grid grid-cols-3 gap-4">
-            {property.additionalImages.map((img, index) => (
+            {property.additional_images.map((img, index) => (
               <div
                 key={index}
                 className="aspect-video overflow-hidden rounded-lg"
@@ -86,7 +86,7 @@ const PropertyDetail = ({ property, onBack, onEdit }: PropertyDetailProps) => {
               </div>
               <div className="flex items-center text-gray-600">
                 <Home className="h-5 w-5 mr-2 text-blue-600" />
-                <span>{property.propertyType}</span>
+                <span>{property.property_type}</span>
               </div>
             </div>
 
@@ -129,7 +129,7 @@ const PropertyDetail = ({ property, onBack, onEdit }: PropertyDetailProps) => {
                     </span>
                   </div>
                   <p className="text-lg font-semibold">
-                    AED {property.minInvestment.toLocaleString()}
+                    AED {property.min_investment.toLocaleString()}
                   </p>
                 </div>
 
@@ -139,7 +139,7 @@ const PropertyDetail = ({ property, onBack, onEdit }: PropertyDetailProps) => {
                     <span className="text-sm text-gray-500">Expected ROI</span>
                   </div>
                   <p className="text-lg font-semibold text-green-600">
-                    {property.expectedROI}%
+                    {property.expected_roi}%
                   </p>
                 </div>
               </div>
@@ -156,24 +156,24 @@ const PropertyDetail = ({ property, onBack, onEdit }: PropertyDetailProps) => {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">
-                    AED {property.fundingProgress.toLocaleString()} raised
+                    AED {property.funding_progress.toLocaleString()} raised
                   </span>
                   <span className="font-medium">
                     {Math.round(progressPercentage)}% of AED
-                    {property.fundingGoal.toLocaleString()}
+                    {property.funding_goal.toLocaleString()}
                   </span>
                 </div>
               </div>
             </div>
 
             {/* Investment Details */}
-            {property.investmentDetails && (
+            {property.investment_details && (
               <div>
                 <h3 className="text-lg font-semibold mb-2">
                   Investment Details
                 </h3>
                 <div className="grid grid-cols-1 gap-3">
-                  {property.investmentDetails.term && (
+                  {property.investment_details.term && (
                     <div className="bg-gray-50 p-3 rounded-lg">
                       <div className="flex items-center mb-1">
                         <span className="text-sm text-gray-500">
@@ -181,12 +181,12 @@ const PropertyDetail = ({ property, onBack, onEdit }: PropertyDetailProps) => {
                         </span>
                       </div>
                       <p className="text-gray-700">
-                        {property.investmentDetails.term}
+                        {property.investment_details.term}
                       </p>
                     </div>
                   )}
 
-                  {property.investmentDetails.payoutFrequency && (
+                  {property.investment_details.payoutFrequency && (
                     <div className="bg-gray-50 p-3 rounded-lg">
                       <div className="flex items-center mb-1">
                         <span className="text-sm text-gray-500">
@@ -194,12 +194,12 @@ const PropertyDetail = ({ property, onBack, onEdit }: PropertyDetailProps) => {
                         </span>
                       </div>
                       <p className="text-gray-700">
-                        {property.investmentDetails.payoutFrequency}
+                        {property.investment_details.payoutFrequency}
                       </p>
                     </div>
                   )}
 
-                  {property.investmentDetails.exitStrategy && (
+                  {property.investment_details.exitStrategy && (
                     <div className="bg-gray-50 p-3 rounded-lg">
                       <div className="flex items-center mb-1">
                         <span className="text-sm text-gray-500">
@@ -207,12 +207,12 @@ const PropertyDetail = ({ property, onBack, onEdit }: PropertyDetailProps) => {
                         </span>
                       </div>
                       <p className="text-gray-700">
-                        {property.investmentDetails.exitStrategy}
+                        {property.investment_details.exitStrategy}
                       </p>
                     </div>
                   )}
 
-                  {property.investmentDetails.investorCount > 0 && (
+                  {property.investment_details.investorCount > 0 && (
                     <div className="bg-gray-50 p-3 rounded-lg">
                       <div className="flex items-center mb-1">
                         <span className="text-sm text-gray-500">
@@ -220,7 +220,7 @@ const PropertyDetail = ({ property, onBack, onEdit }: PropertyDetailProps) => {
                         </span>
                       </div>
                       <p className="text-gray-700">
-                        {property.investmentDetails.investorCount} investors
+                        {property.investment_details.investorCount} investors
                       </p>
                     </div>
                   )}

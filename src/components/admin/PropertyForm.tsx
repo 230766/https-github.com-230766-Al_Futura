@@ -28,28 +28,30 @@ export interface PropertyFormData {
   title: string;
   description: string;
   location: string;
-  imageUrl: string;
-  additionalImages: string[];
-  minInvestment: number;
-  expectedROI: number;
-  fundingProgress: number;
-  fundingGoal: number;
-  propertyType: string;
+  image_url: string;
+  additional_images?: string[];
+  min_investment: number;
+  expected_roi: number;
+  funding_progress: number;
+  funding_goal: number;
+  property_type: string;
   features: string[];
-  investmentDetails: {
+  investment_term: number;
+  investment_details: {
     term: string;
     payoutFrequency: string;
     exitStrategy: string;
     investorCount: number;
+    marketplace_url?: string;
+    blockchain?: string;
+    marketplace?: string;
   };
   is_featured?: boolean;
-  nftDetails?: {
-    totalNFTs: number;
-    minPurchaseNFT: number;
-    blockchain: string;
-    marketplace: string;
-    marketplace_url?: string;
-  };
+  blockchain?: "Solana" | "Ethereum" | "VeChain" | "Polygon";
+  marketplace?: "OpenSea" | "Rarible" | "AlFutura";
+  marketplace_url?: string;
+  total_nfts?: number;
+  min_purchase_nft?: number;
 }
 
 interface PropertyFormProps {
@@ -71,17 +73,13 @@ const defaultProperty: NewProperty = {
   funding_goal: 100000,
   property_type: "Residential",
   features: [],
+  investment_term: 5,
   investment_details: {
     term: "5 years",
     payoutFrequency: "Quarterly",
     exitStrategy: "Property sale or refinancing",
-    investorCount: 0,
-  },
-  investment_term: 5,
-  blockchain: "Ethereum",
-  marketplace: "AlFutura",
-  marketplace_url: "",
-  min_purchase_nft: 1
+    investorCount: 0
+  }
 };
 
 const propertyTypes = [
@@ -102,22 +100,11 @@ const PropertyForm = ({
   onCancel,
   isLoading = false,
 }: PropertyFormProps) => {
-  console.log('PropertyForm initialData:', initialData);
-  console.log('PropertyForm initialData.investment_details:', initialData?.investment_details);
-  console.log('PropertyForm initialData.investmentDetails:', initialData?.investmentDetails);
-
   const [formData, setFormData] = useState<NewProperty>(() => {
     if (initialData) {
       // Ensure property type is correctly initialized from initialData
-      const propertyType = initialData.property_type || initialData.propertyType || "Residential";
+      const propertyType = initialData.property_type || "Residential";
       console.log('Initializing form with property type:', propertyType);
-      
-      // Log investment details
-      console.log('Investment details from initialData:', {
-        investment_details: initialData.investment_details,
-        investmentDetails: initialData.investmentDetails,
-        investorCount: initialData.investment_details?.investorCount || initialData.investmentDetails?.investorCount || 0
-      });
       
       // Create base data
       const baseData = {
@@ -126,25 +113,22 @@ const PropertyForm = ({
         title: initialData.title || "",
         description: initialData.description || "",
         location: initialData.location || "",
-        image_url: initialData.image_url || initialData.imageUrl || "",
-        additional_images: initialData.additional_images || initialData.additionalImages || [],
-        min_investment: initialData.min_investment || initialData.minInvestment || 500,
-        expected_roi: initialData.expected_roi || initialData.expectedROI || 7.5,
-        funding_progress: initialData.funding_progress || initialData.fundingProgress || 0,
-        funding_goal: initialData.funding_goal || initialData.fundingGoal || 100000,
+        image_url: initialData.image_url || "",
+        additional_images: initialData.additional_images || [],
+        min_investment: initialData.min_investment || 500,
+        expected_roi: initialData.expected_roi || 7.5,
+        funding_progress: initialData.funding_progress || 0,
+        funding_goal: initialData.funding_goal || 100000,
         property_type: propertyType,
         features: initialData.features || [],
         investment_term: initialData.investment_term || 5,
         investment_details: {
-          term: initialData.investment_details?.term || initialData.investmentDetails?.term || "5 years",
-          payoutFrequency: initialData.investment_details?.payoutFrequency || initialData.investmentDetails?.payoutFrequency || "Quarterly",
-          exitStrategy: initialData.investment_details?.exitStrategy || initialData.investmentDetails?.exitStrategy || "Property sale or refinancing",
-          investorCount: initialData.investment_details?.investorCount || initialData.investmentDetails?.investorCount || 0
+          term: initialData.investment_details?.term || "5 years",
+          payoutFrequency: initialData.investment_details?.payoutFrequency || "Quarterly",
+          exitStrategy: initialData.investment_details?.exitStrategy || "Property sale or refinancing",
+          investorCount: initialData.investment_details?.investorCount || 0
         }
       };
-
-      // Log base data
-      console.log('Base data with investment details:', baseData.investment_details);
 
       // If it's an NFT property, add NFT-specific fields
       if (propertyType === "NFT-properties") {
@@ -163,7 +147,6 @@ const PropertyForm = ({
           }
         };
         
-        console.log('NFT data with investment details:', nftData.investment_details);
         return nftData;
       }
 
@@ -172,91 +155,85 @@ const PropertyForm = ({
     return defaultProperty;
   });
 
-  console.log('FormData after initialization:', formData);
-  console.log('FormData investment_details after initialization:', formData.investment_details);
-
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [singleImageUrl, setSingleImageUrl] = useState("");
-
-  useEffect(() => {
-    if (initialData) {
-      const propertyType = initialData.property_type || initialData.propertyType || "Residential";
-      
-      const baseData = {
-        ...defaultProperty,
-        id: initialData.id,
-        title: initialData.title || "",
-        description: initialData.description || "",
-        location: initialData.location || "",
-        image_url: initialData.image_url || initialData.imageUrl || "",
-        additional_images: initialData.additional_images || initialData.additionalImages || [],
-        min_investment: initialData.min_investment || initialData.minInvestment || 500,
-        expected_roi: initialData.expected_roi || initialData.expectedROI || 7.5,
-        funding_progress: initialData.funding_progress || initialData.fundingProgress || 0,
-        funding_goal: initialData.funding_goal || initialData.fundingGoal || 100000,
-        property_type: propertyType,
-        features: initialData.features || [],
-        investment_term: initialData.investment_term || 5,
-        investment_details: {
-          term: initialData.investment_details?.term || "5 years",
-          payoutFrequency: initialData.investment_details?.payoutFrequency || "Quarterly",
-          exitStrategy: initialData.investment_details?.exitStrategy || "Property sale or refinancing",
-          investorCount: initialData.investment_details?.investorCount || 0
-        }
-      };
-
-      if (propertyType === "NFT-properties") {
-        setFormData({
-          ...baseData,
-          blockchain: initialData.blockchain || "Ethereum",
-          marketplace: initialData.marketplace || "AlFutura",
-          marketplace_url: initialData.marketplace_url || "",
-          min_purchase_nft: initialData.min_purchase_nft || 1,
-          total_nfts: initialData.total_nfts || Math.floor((initialData.funding_goal || 100000) / 500),
-          investment_details: {
-            ...baseData.investment_details,
-            marketplace_url: initialData.marketplace_url || "",
-            blockchain: initialData.blockchain || "Ethereum",
-            marketplace: initialData.marketplace || "AlFutura"
-          }
-        });
-      } else {
-        setFormData(baseData);
-      }
-    }
-  }, [initialData]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => {
-      const updatedData = { ...prev };
-      
-      // Handle numeric fields
-      if (name === "min_investment" || name === "expected_roi" || 
-          name === "funding_progress" || name === "funding_goal") {
-        updatedData[name] = parseFloat(value) || 0;
-      }
-      // Handle additional images
-      else if (name === "additional_images") {
-        updatedData.additional_images = value.split("\n").filter((url) => url.trim() !== "");
-      }
-      // Handle marketplace URL
-      else if (name === "marketplace_url") {
-        updatedData.marketplace_url = value;
-        updatedData.investment_details = {
-          ...updatedData.investment_details,
-          marketplace_url: value
-        };
-      }
-      // Handle all other fields
-      else {
-        updatedData[name] = value;
-      }
-
-      return updatedData;
-    });
+    
+    // Convert camelCase to snake_case for field names
+    const fieldName = name.replace(/([A-Z])/g, "_$1").toLowerCase();
+    
+    if (name === "min_investment" || name === "min_investment") {
+      setFormData((prev) => ({
+        ...prev,
+        min_investment: parseInt(value) || 0,
+      }));
+    } else if (name === "expected_roi" || name === "expected_roi") {
+      setFormData((prev) => ({
+        ...prev,
+        expected_roi: parseFloat(value) || 0,
+      }));
+    } else if (name === "funding_progress" || name === "funding_progress") {
+      setFormData((prev) => ({
+        ...prev,
+        funding_progress: parseInt(value) || 0,
+      }));
+    } else if (name === "funding_goal" || name === "funding_goal") {
+      setFormData((prev) => ({
+        ...prev,
+        funding_goal: parseInt(value) || 0,
+      }));
+    } else if (name === "investment_term" || name === "investment_term") {
+      setFormData((prev) => ({
+        ...prev,
+        investment_term: parseInt(value) || 0,
+      }));
+    } else if (name === "term") {
+      setFormData((prev) => ({
+        ...prev,
+        investment_details: {
+          ...prev.investment_details,
+          term: value,
+        },
+      }));
+    } else if (name === "payoutFrequency") {
+      setFormData((prev) => ({
+        ...prev,
+        investment_details: {
+          ...prev.investment_details,
+          payoutFrequency: value,
+        },
+      }));
+    } else if (name === "exitStrategy") {
+      setFormData((prev) => ({
+        ...prev,
+        investment_details: {
+          ...prev.investment_details,
+          exitStrategy: value,
+        },
+      }));
+    } else if (name === "investorCount") {
+      setFormData((prev) => ({
+        ...prev,
+        investment_details: {
+          ...prev.investment_details,
+          investorCount: parseInt(value) || 0,
+        },
+      }));
+    } else if (name === "marketplace_url") {
+      setFormData((prev) => ({
+        ...prev,
+        marketplace_url: value,
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [fieldName]: value,
+      }));
+    }
 
     // Clear error when field is edited
     if (errors[name]) {
@@ -278,8 +255,8 @@ const PropertyForm = ({
       if (value === "NFT-properties") {
         return {
           ...baseData,
-          blockchain: "Ethereum",
-          marketplace: "AlFutura",
+          blockchain: "Ethereum" as "Ethereum",
+          marketplace: "AlFutura" as "AlFutura",
           marketplace_url: "",
           min_purchase_nft: 1,
           total_nfts: Math.floor(prev.funding_goal / 500),
@@ -508,6 +485,20 @@ const PropertyForm = ({
     }
   };
 
+  const handleBlockchainChange = (value: "Solana" | "Ethereum" | "VeChain" | "Polygon") => {
+    setFormData((prev) => ({
+      ...prev,
+      blockchain: value,
+    }));
+  };
+
+  const handleMarketplaceChange = (value: "OpenSea" | "Rarible" | "AlFutura") => {
+    setFormData((prev) => ({
+      ...prev,
+      marketplace: value,
+    }));
+  };
+
   return (
     <Card className="w-full bg-white">
       <CardHeader>
@@ -586,7 +577,7 @@ const PropertyForm = ({
             </Label>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-gray-500">
-                  {formData.additional_images.length} image{formData.additional_images.length !== 1 ? 's' : ''}
+                  {formData.additional_images?.length || 0} image{formData.additional_images?.length !== 1 ? 's' : ''}
                 </span>
                 <Button 
                   type="button" 
@@ -650,7 +641,7 @@ const PropertyForm = ({
               </Button>
             </div>
             
-            {formData.additional_images.length > 0 && (
+            {formData.additional_images?.length > 0 && (
               <div className="mt-4 space-y-2">
                 <p className="text-sm font-medium">Current Images:</p>
                 <div className="space-y-2 max-h-[200px] overflow-y-auto p-2 border rounded-md">
@@ -909,12 +900,7 @@ const PropertyForm = ({
                   <Label htmlFor="blockchain">Blockchain</Label>
                   <Select
                     value={formData.blockchain || "Solana"}
-                    onValueChange={(value) => {
-                      setFormData((prev) => ({
-                        ...prev,
-                        blockchain: value,
-                      }));
-                    }}
+                    onValueChange={handleBlockchainChange}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select blockchain" />
@@ -933,12 +919,7 @@ const PropertyForm = ({
                   <Label htmlFor="marketplace">Marketplace</Label>
                   <Select
                     value={formData.marketplace || "AlFutura"}
-                    onValueChange={(value) => {
-                      setFormData((prev) => ({
-                        ...prev,
-                        marketplace: value,
-                      }));
-                    }}
+                    onValueChange={handleMarketplaceChange}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select marketplace" />
