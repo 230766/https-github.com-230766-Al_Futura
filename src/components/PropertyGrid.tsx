@@ -3,9 +3,15 @@ import { Card } from "./ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Input } from "./ui/input";
 import { Slider } from "./ui/slider";
-import { Search, MapPin, Home, TrendingUp, Users, ChevronLeft, ChevronRight, Wallet } from "lucide-react";
+import { Search, MapPin, Home, TrendingUp, Users, ChevronLeft, ChevronRight, Wallet, Menu } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
 
 // Improved PropertyCard component
 interface PropertyCardProps {
@@ -224,6 +230,7 @@ const PropertyGrid = ({
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const propertiesPerPage = 6;
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Calculate maximum ROI from properties
   const maxROI = Math.ceil(Math.max(...properties.map(p => p.expectedROI)));
@@ -387,13 +394,14 @@ const PropertyGrid = ({
             </div>
           </div>
 
-          {/* Property type tabs */}
+          {/* Property type tabs with responsive design */}
           <Tabs
             defaultValue="all"
             value={activeTab.toLowerCase()}
             onValueChange={handleTabChange}
           >
-            <TabsList className="mb-6">
+            {/* Desktop TabsList */}
+            <TabsList className="mb-6 hidden md:inline-flex">
               {propertyTypes.map((type) => (
                 <TabsTrigger key={type} value={type.toLowerCase()} className="capitalize">
                   {type === "all" ? "All Properties" : type}
@@ -413,6 +421,44 @@ const PropertyGrid = ({
                 </TabsTrigger>
               ))}
             </TabsList>
+
+            {/* Mobile Dropdown Menu */}
+            <div className="md:hidden mb-6">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="w-full justify-between">
+                    <span className="capitalize">
+                      {activeTab === "all" ? "All Properties" : activeTab}
+                    </span>
+                    <Menu className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-full">
+                  {propertyTypes.map((type) => (
+                    <DropdownMenuItem
+                      key={type}
+                      onClick={() => handleTabChange(type.toLowerCase())}
+                      className="capitalize"
+                    >
+                      {type === "all" ? "All Properties" : type}
+                      {type === "all" ? (
+                        <Home className="ml-2" size={16} />
+                      ) : type === "Residential" ? (
+                        <Home className="ml-2" size={16} />
+                      ) : type === "Commercial" ? (
+                        <TrendingUp className="ml-2" size={16} />
+                      ) : type === "Vacation" ? (
+                        <Users className="ml-2" size={16} />
+                      ) : type === "NFT-properties" ? (
+                        <Wallet className="ml-2" size={16} />
+                      ) : (
+                        <Home className="ml-2" size={16} />
+                      )}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
 
             <TabsContent value={activeTab.toLowerCase()} className="mt-0">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
